@@ -1,12 +1,17 @@
 package server.domain.models;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.json.simple.JSONObject;
+
+import java.util.Date;
+
 public class Slot {
-    int day;
-    int hour;
-    String courseID;
-    int groupID;
-    int duration;
-    int slotID;
+
+    private Date date;
+    private String courseID;
+    private int groupID;
+    private int slotID;
 
     public Slot(){}
 
@@ -14,7 +19,4 @@ public class Slot {
         return slotID;
     }
 
-    public int getDay() {
-        return this.day;
-    }
 }

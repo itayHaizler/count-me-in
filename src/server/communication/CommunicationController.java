@@ -136,7 +136,7 @@ public class CommunicationController {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
+                final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -269,7 +269,9 @@ public class CommunicationController {
                 he.close();
             }
         });
+        server.start();
     }
+
 
     public static void sendResponse(HttpExchange he, String response) throws IOException {
         final byte[] ResponseBytes = response.getBytes(UTF8);

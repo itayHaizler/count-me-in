@@ -1,5 +1,11 @@
 package server.domain;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import server.dataAccess.Controller;
 import org.json.simple.JSONObject;
 import server.domain.models.Assignings;
@@ -35,19 +41,29 @@ public class SystemFacade {
 
     public String getRegisteredStudents(int slotID) {
         if (!isAdminMode)
-            return createJSONMsg("ERROR","Faculty access only");
+            return createJSONMsg("ERROR", "Faculty access only");
         else {
             List<Assignings> assignings = Controller.getAssigningsOfSlot(slotID);
-            for (Assignings asg: assignings) {
+            for (Assignings asg : assignings) {
                 // TODO: create JSON with:
                 asg.getStudent().getName();
                 asg.getStudentID();
             }
         }
+        return "";
     }
 
-    public String getSlots(String courseID, int groupID) {
-        return Controller.getSlotsForFacultyMember(courseID, groupID);
+    public String getSlots(String courseID, int groupID) throws ParseException {
+        List<Slot> slots = Controller.getSlotsForFacultyMember(courseID, groupID);
+        JSONArray jsonArray = new JSONArray();
+        for (Slot slot : slots) {
+            JSONObject slotJson = new JSONObject();
+            Gson gson = new GsonBuilder().create();
+            JSONParser parser = new JSONParser();
+            slotJson = (JSONObject) parser.parse(gson.toJson(slot));
+            jsonArray.add(slotJson);
+        }
+        return jsonArray.toString();
     }
 
     public String loginStudent(UUID sessionID, String email, String password) {
@@ -63,56 +79,61 @@ public class SystemFacade {
         // TODO: need to secure this shittttttttttt
         if (email.equals("Admin@post.bgu.ac.il") && password.equals("1234")) {
             this.isAdminMode = true;
-            return createJSONMsg("SUCCESS","Valid Admin");
+            return createJSONMsg("SUCCESS", "Valid Admin");
         }
         return "Invalid Admin";
     }
 
-    public String getStudentSchedule(UUID sessionID) {
+    public String getStudentSchedule(UUID sessionID) throws ParseException {
         // TODO: get studentId with session
         String studentID = "";
         List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
         List<Assignings> assignings = Controller.getAssigningsOfStudent(studentID);
-        HashMap<Integer, Boolean> isGreenSlot = new HashMap<Integer, Boolean>();
-        for (Assignings as: assignings) {
-            isGreenSlot.put(as.getSlotID(), true);
+        HashMap<Integer, Boolean> greenSlots = new HashMap<Integer, Boolean>();
+        for (Assignings as : assignings) {
+            greenSlots.put(as.getSlotID(), true);
         }
 
-        for (Slot slot: allSlots) {
-            // TODO: create JSON array of slots in schedule
-            if (slot.getDay() > 7) {
-                // week 2 in JSON
-            }
-            else {
-                // week 1 in JSON
-            }
-            if (isGreenSlot.containsKey(slot.getSlotID())) {
-                // green slot in JSON
-            }
+        JSONArray allSlotsJson = new JSONArray();
+
+        // [ {slot id: , date, courseId, groupId, isApproved}]
+        JSONObject slotJson = new JSONObject();
+        for (Slot slot : allSlots) {
+            Gson gson = new GsonBuilder().create();
+            JSONParser parser = new JSONParser();
+            slotJson = (JSONObject) parser.parse(gson.toJson(slot));
+            slotJson.put("isApproved", greenSlots.containsKey(slot.getSlotID()));
+            allSlotsJson.add(slotJson);
         }
-        return "";
+        return allSlotsJson.toString();
     }
 
     public String getStudentScheduleForBiding(UUID sessionID) {
         // TODO: get studentId with session
         String studentID = "";
         List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
-        for (Slot slot: allSlots) {
+        for (Slot slot : allSlots) {
             // TODO: create JSON array of slots in schedule
             if (slot.getDay() <= 7) {
                 // add to JSON
-            }
-            else {
+            } else {
                 // don't add to JSON
             }
         }
         return "";
     }
 
-    public void setBid(UUID sessionID, int slotID, int percentage){
+    public void setBid(UUID sessionID, int slotID, int percentage) {
         // TODO: get student id from session id
         String studentID = "000";
         Controller.setStudentBid(studentID, slotID, percentage);
+    }
+
+    public void calculateBiding() {
+        // get all bids
+        // calculate points of every student per slot
+        // choose top capacity students with highest points
+        // update points for winning students
     }
 
     public String createJSONMsg(String type, String content) {
