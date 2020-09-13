@@ -1,5 +1,6 @@
 package server.service;
 
+import org.json.simple.parser.ParseException;
 import server.dataAccess.Controller;
 import server.domain.SystemFacade;
 
@@ -16,13 +17,14 @@ public class StudentHandler {
     }
 
     public void updatePercentage(UUID sessionID, int slotID, int percentage) {
+        SystemFacade.getInstance().setBid(sessionID, slotID, percentage);
     }
 
-    public String getSchedule(UUID sessionID) {
+    public String getSchedule(UUID sessionID) throws ParseException {
         return SystemFacade.getInstance().getStudentSchedule(sessionID);
     }
 
-    public String getScheduleBiding(UUID sessionID) {
+    public String getScheduleBiding(UUID sessionID) throws ParseException {
         return SystemFacade.getInstance().getStudentScheduleForBiding(sessionID);
     }
 }

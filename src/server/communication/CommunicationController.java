@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpServer;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import server.service.FacultyHandler;
+import server.service.SessionHandler;
 import server.service.StudentHandler;
 
 import java.io.*;
@@ -25,6 +26,8 @@ public class CommunicationController {
     //Handlers
     private static FacultyHandler facultyHandler = new FacultyHandler();
     private static StudentHandler studentHandler = new StudentHandler();
+    private static SessionHandler sessionHandler = new SessionHandler();
+
 
     public static void start() throws IOException {
         final HttpServer server = HttpServer.create(new InetSocketAddress(HOSTNAME, PORT), 1);
@@ -82,6 +85,24 @@ public class CommunicationController {
 
         });
 
+        //-----------------------------------------Session case------------------------------------------
+        //accept: null
+        //retrieve: {session_id: String}
+        server.createContext("/count-me-in/openSession", he -> {
+            final Headers headers = he.getResponseHeaders();
+
+            try {
+                String response = sessionHandler.openNewSession();
+                headers.set("openSession", String.format("application/json; charset=%s", UTF8));
+                sendResponse(he, response);
+            } catch (Exception e) {
+                headers.set("openSession", String.format("application/json; charset=%s", UTF8));
+                sendERROR(he, e.getMessage());
+            } finally {
+                he.close();
+            }
+        });
+
 
         //-----------------------------------------FacultyHandler cases------------------------------------------
         //accept: {session_id:String, email:String, password:String}
@@ -136,7 +157,7 @@ public class CommunicationController {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
+                final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -269,7 +290,9 @@ public class CommunicationController {
                 he.close();
             }
         });
+        server.start();
     }
+
 
     public static void sendResponse(HttpExchange he, String response) throws IOException {
         final byte[] ResponseBytes = response.getBytes(UTF8);
