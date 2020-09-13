@@ -3,6 +3,8 @@ package server.communication;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import server.service.FacultyHandler;
 import server.service.StudentHandler;
 
@@ -10,7 +12,6 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.UUID;
 
 public class CommunicationController {
@@ -99,8 +100,6 @@ public class CommunicationController {
                 String response = facultyHandler.login(UUID.fromString(session_id),email, password);
                 headers.set("loginFaculty", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
-            } catch (ParseException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 headers.set("loginFaculty", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
@@ -123,8 +122,6 @@ public class CommunicationController {
                 String response = facultyHandler.getRegisteredStudents(slotID);
                 headers.set("getRegisteredStudents", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
-            } catch (ParseException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 headers.set("getRegisteredStudents", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
@@ -148,9 +145,7 @@ public class CommunicationController {
                 String response = facultyHandler.getSlots(courseID, groupID);
                 headers.set("getSlots", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
+            }catch (Exception e) {
                 headers.set("getSlots", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
             } finally {
@@ -176,8 +171,6 @@ public class CommunicationController {
                 String response = studentHandler.login(UUID.fromString(session_id),email, password);
                 headers.set("loginStudent", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
-            } catch (ParseException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 headers.set("loginStudent", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
@@ -200,8 +193,6 @@ public class CommunicationController {
                 String response = studentHandler.getStudentPoints(UUID.fromString(session_id));
                 headers.set("getStudentPoints", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
-            } catch (ParseException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 headers.set("getStudentPoints", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
@@ -227,9 +218,7 @@ public class CommunicationController {
                 studentHandler.updatePercentage(UUID.fromString(session_id), slotID, percentage);
                 headers.set("updatePercentage", String.format("application/json; charset=%s", UTF8));
                 //sendResponse(he, response);TODO: ???
-            } catch (ParseException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
+            }  catch (Exception e) {
                 headers.set("updatePercentage", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
             } finally {
@@ -251,8 +240,6 @@ public class CommunicationController {
                 String response = studentHandler.getSchedule(UUID.fromString(session_id));
                 headers.set("getSchedule", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
-            } catch (ParseException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 headers.set("getSchedule", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
@@ -275,8 +262,6 @@ public class CommunicationController {
                 String response = studentHandler.getScheduleBiding(UUID.fromString(session_id));
                 headers.set("getScheduleBiding", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
-            } catch (ParseException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 headers.set("getScheduleBiding", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());
