@@ -19,5 +19,8 @@ public class FacultyHandler {
         return SystemFacade.getInstance().getSlots(courseID, groupID);
     }
 
+    public void updatePoints(String studentID, int newPoints) {
+        SystemFacade.getInstance().updatePointsForStudent(studentID, newPoints);
+    }
 
 }

@@ -119,7 +119,7 @@ public class SystemFacade {
         if(se == null)
             throw new IllegalArgumentException("Invalid Session ID");
         String studentID = se.getStudentID();
-        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
+        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID, false);
         List<Assignings> assignings = Controller.getAssigningsOfStudent(studentID);
         HashMap<Integer, Boolean> greenSlots = new HashMap<Integer, Boolean>();
         for (Assignings as : assignings) {
@@ -140,21 +140,23 @@ public class SystemFacade {
         return allSlotsJson.toString();
     }
 
-    public String getStudentScheduleForBiding(UUID sessionID) {
+    public String getStudentScheduleForBiding(UUID sessionID) throws ParseException{
         Session se = active_sessions.get(sessionID);
         if(se == null)
             throw new IllegalArgumentException("Invalid Session ID");
         String studentID = se.getStudentID();
-        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
+        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID, true);
+        JSONArray allSlotsJson = new JSONArray();
+
+        // [ {slot id: , date, courseId, groupId} ]
+        JSONObject slotJson = new JSONObject();
         for (Slot slot : allSlots) {
-            // TODO: create JSON array of slots in schedule
-            if (slot.getDay() <= 7) {
-                // add to JSON
-            } else {
-                // don't add to JSON
-            }
+            Gson gson = new GsonBuilder().create();
+            JSONParser parser = new JSONParser();
+            slotJson = (JSONObject) parser.parse(gson.toJson(slot));
+            allSlotsJson.add(slotJson);
         }
-        return "";
+        return allSlotsJson.toString();
     }
 
     public void setBid(UUID sessionID, int slotID, int percentage) {
@@ -177,5 +179,7 @@ public class SystemFacade {
         return response.toJSONString();
     }
 
-
+    public void updatePointsForStudent(String studentID, int newPoints) {
+        Controller.setStudentPoints(studentID, newPoints);
+    }
 }
