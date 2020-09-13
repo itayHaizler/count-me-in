@@ -2,6 +2,7 @@ package server.dataAccess;
 
 import server.domain.models.Assignings;
 import server.domain.models.Slot;
+import server.domain.models.SlotDates;
 
 import java.util.List;
 
@@ -18,13 +19,25 @@ public class Controller {
         return null;
     }
 
-    public static List<Assignings> getAssigningsOfStudent(String studentID) {
+    public static List<Slot> getAllSlotsOfStudent(String studentID) {
         return null;
     }
 
-    public static List<Slot> getSlotsOfStudent(String studentID, boolean forBiding) {
-        // TODO: filter dates- if forBiding: 27-9-2020 - 02-10-2020
-        // TODO:               for schedule: 13-9-2020 - 25-9-2020
+
+    public static List<Assignings> getAssigningsOfStudent(String studentID) {
+        // TODO: filter by 13-9-2020 - 25-9-2020
+
+        return null;
+    }
+
+    public static List<SlotDates> getSlotsDatesOfStudent(String studentID) {
+        // TODO: filter by 13-9-2020 - 25-9-2020
+
+        return null;
+    }
+
+    public static Slot getSlotOfSlotDate(SlotDates slotDate) {
+        // TODO: return slot of specific slot date
         return null;
     }
 
