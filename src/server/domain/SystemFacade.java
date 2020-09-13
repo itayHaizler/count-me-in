@@ -87,7 +87,7 @@ public class SystemFacade {
     public String getStudentSchedule(UUID sessionID) throws ParseException {
         // TODO: get studentId with session
         String studentID = "";
-        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
+        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID, false);
         List<Assignings> assignings = Controller.getAssigningsOfStudent(studentID);
         HashMap<Integer, Boolean> greenSlots = new HashMap<Integer, Boolean>();
         for (Assignings as : assignings) {
@@ -111,7 +111,7 @@ public class SystemFacade {
     public String getStudentScheduleForBiding(UUID sessionID) throws ParseException {
         // TODO: get studentId with session
         String studentID = "";
-        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
+        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID, true);
         JSONArray allSlotsJson = new JSONArray();
 
         // [ {slot id: , date, courseId, groupId} ]

@@ -23,7 +23,7 @@ public class Controller {
     }
 
     public static List<Slot> getSlotsOfStudent(String studentID, boolean forBiding) {
-        // TODO: filter dates- if forBiding: 13-9-2020 - 25-9-2020
+        // TODO: filter dates- if forBiding: 27-9-2020 - 02-10-2020
         // TODO:               for schedule: 13-9-2020 - 25-9-2020
         return null;
     }
