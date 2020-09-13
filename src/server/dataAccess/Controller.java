@@ -47,4 +47,8 @@ public class Controller {
 
     public static void setStudentBid(String studentID, int slotID, int percentage) {
     }
+
+    public static String getStudentID(String email, String password){
+        return null;
+    }
 }
