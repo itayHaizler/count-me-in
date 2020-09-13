@@ -16,10 +16,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SystemFacade {
 
     private boolean isAdminMode;
+    private ConcurrentHashMap<UUID,Session> active_sessions;
 
     private static SystemFacade ourInstance = new SystemFacade();
 
@@ -27,11 +29,32 @@ public class SystemFacade {
         return ourInstance;
     }
 
-    public String getStudentPoints(UUID sessionId) {
 
-        // TODO: check session id and get student id
-        String studentID = "111";
-        return createJSONMsg("SUCCESS", Integer.toString(Controller.getStudentPoints(studentID)));
+    public SystemFacade(){
+        this.active_sessions = new ConcurrentHashMap<>();
+    }
+
+    //--------------------------------------handle sessions----------------------------------------
+    public UUID createNewSession(){
+        Session newSession = new Session();
+        UUID sessionID = newSession.getSession_id();
+        active_sessions.put(sessionID, newSession);
+        return sessionID;
+    }
+
+    public void closeSession(UUID session_id) {
+        if(!active_sessions.containsKey(session_id))
+            throw new IllegalArgumentException("Invalid Session ID");
+        active_sessions.remove(session_id);
+    }
+    //----------------------------------------------------------------------------------------------
+
+
+    public String getStudentPoints(UUID sessionId) {
+        Session se = active_sessions.get(sessionId);
+        if(se == null)
+            throw new IllegalArgumentException("Invalid Session ID");
+        return createJSONMsg("SUCCESS", Integer.toString(Controller.getStudentPoints(se.getStudentID())));
     }
 
     private void updatePoints(String studentID, int pointsDeducted) {
@@ -44,32 +67,39 @@ public class SystemFacade {
             return createJSONMsg("ERROR", "Faculty access only");
         else {
             List<Assignings> assignings = Controller.getAssigningsOfSlot(slotID);
+            JSONArray assigningsJson = new JSONArray();
+            JSONObject assJson;
             for (Assignings asg : assignings) {
-                // TODO: create JSON with:
-                asg.getStudent().getName();
-                asg.getStudentID();
+                assJson = new JSONObject();
+                assJson.put("name", asg.getStudent().getName());
+                assJson.put("studentID", asg.getStudentID());
+                assigningsJson.add(assJson);
             }
+            return assigningsJson.toJSONString();
         }
-        return "";
     }
 
     public String getSlots(String courseID, int groupID) throws ParseException {
         List<Slot> slots = Controller.getSlotsForFacultyMember(courseID, groupID);
         JSONArray jsonArray = new JSONArray();
         for (Slot slot : slots) {
-            JSONObject slotJson = new JSONObject();
             Gson gson = new GsonBuilder().create();
             JSONParser parser = new JSONParser();
-            slotJson = (JSONObject) parser.parse(gson.toJson(slot));
+            JSONObject slotJson = (JSONObject) parser.parse(gson.toJson(slot));
             jsonArray.add(slotJson);
         }
         return jsonArray.toString();
     }
 
     public String loginStudent(UUID sessionID, String email, String password) {
+        Session se = active_sessions.get(sessionID);
+        if(se == null)
+            throw new IllegalArgumentException("Invalid Session ID");
         // TODO: how to validate user???????????
         if (true) {
             this.isAdminMode = false;
+            String studentID = Controller.getStudentID(email, password);
+            se.setStudentID(studentID);
             return "Valid Student";
         }
         return "Invalid Student";
@@ -85,8 +115,10 @@ public class SystemFacade {
     }
 
     public String getStudentSchedule(UUID sessionID) throws ParseException {
-        // TODO: get studentId with session
-        String studentID = "";
+        Session se = active_sessions.get(sessionID);
+        if(se == null)
+            throw new IllegalArgumentException("Invalid Session ID");
+        String studentID = se.getStudentID();
         List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
         List<Assignings> assignings = Controller.getAssigningsOfStudent(studentID);
         HashMap<Integer, Boolean> greenSlots = new HashMap<Integer, Boolean>();
@@ -109,8 +141,10 @@ public class SystemFacade {
     }
 
     public String getStudentScheduleForBiding(UUID sessionID) {
-        // TODO: get studentId with session
-        String studentID = "";
+        Session se = active_sessions.get(sessionID);
+        if(se == null)
+            throw new IllegalArgumentException("Invalid Session ID");
+        String studentID = se.getStudentID();
         List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
         for (Slot slot : allSlots) {
             // TODO: create JSON array of slots in schedule
@@ -124,9 +158,10 @@ public class SystemFacade {
     }
 
     public void setBid(UUID sessionID, int slotID, int percentage) {
-        // TODO: get student id from session id
-        String studentID = "000";
-        Controller.setStudentBid(studentID, slotID, percentage);
+        Session se = active_sessions.get(sessionID);
+        if(se == null)
+            throw new IllegalArgumentException("Invalid Session ID");
+        Controller.setStudentBid(se.getStudentID(), slotID, percentage);
     }
 
     public void calculateBiding() {
@@ -141,4 +176,6 @@ public class SystemFacade {
         response.put(type, content);
         return response.toJSONString();
     }
+
+
 }
