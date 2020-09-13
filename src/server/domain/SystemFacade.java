@@ -16,6 +16,7 @@ public class SystemFacade {
     private boolean isAdminMode;
 
     private static SystemFacade ourInstance = new SystemFacade();
+
     public static SystemFacade getInstance() {
         return ourInstance;
     }
@@ -34,9 +35,14 @@ public class SystemFacade {
 
     public String getRegisteredStudents(int slotID) {
         if (!isAdminMode)
-            createJSONMsg("ERROR","Faculty access only");
+            return createJSONMsg("ERROR","Faculty access only");
         else {
-
+            List<Assignings> assignings = Controller.getAssigningsOfSlot(slotID);
+            for (Assignings asg: assignings) {
+                // TODO: create JSON with:
+                asg.getStudent().getName();
+                asg.getStudentID();
+            }
         }
     }
 
@@ -62,7 +68,6 @@ public class SystemFacade {
         return "Invalid Admin";
     }
 
-
     public String getStudentSchedule(UUID sessionID) {
         // TODO: get studentId with session
         String studentID = "";
@@ -87,6 +92,7 @@ public class SystemFacade {
         }
         return "";
     }
+
     public String getStudentScheduleForBiding(UUID sessionID) {
         // TODO: get studentId with session
         String studentID = "";
@@ -101,6 +107,12 @@ public class SystemFacade {
             }
         }
         return "";
+    }
+
+    public void setBid(UUID sessionID, int slotID, int percentage){
+        // TODO: get student id from session id
+        String studentID = "000";
+        Controller.setStudentBid(studentID, slotID, percentage);
     }
 
     public String createJSONMsg(String type, String content) {

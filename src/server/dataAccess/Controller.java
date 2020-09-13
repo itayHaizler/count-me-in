@@ -22,4 +22,11 @@ public class Controller {
 
     public static List<Slot> getSlotsOfStudent(String studentID) {
     }
+
+    public static List<Assignings> getAssigningsOfSlot(int slotID) {
+
+    }
+
+    public static void setStudentBid(String studentID, int slotID, int percentage) {
+    }
 }

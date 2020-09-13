@@ -16,6 +16,7 @@ public class StudentHandler {
     }
 
     public void updatePercentage(UUID sessionID, int slotID, int percentage) {
+        SystemFacade.getInstance().setBid(sessionID, slotID, percentage);
     }
 
     public String getSchedule(UUID sessionID) {
