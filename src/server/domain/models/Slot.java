@@ -15,6 +15,10 @@ public class Slot {
 
     public Slot(){}
 
+    public Date getDate() {
+        return date;
+    }
+
     public int getSlotID() {
         return slotID;
     }

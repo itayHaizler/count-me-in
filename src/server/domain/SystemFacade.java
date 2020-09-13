@@ -108,19 +108,21 @@ public class SystemFacade {
         return allSlotsJson.toString();
     }
 
-    public String getStudentScheduleForBiding(UUID sessionID) {
+    public String getStudentScheduleForBiding(UUID sessionID) throws ParseException {
         // TODO: get studentId with session
         String studentID = "";
         List<Slot> allSlots = Controller.getSlotsOfStudent(studentID);
+        JSONArray allSlotsJson = new JSONArray();
+
+        // [ {slot id: , date, courseId, groupId} ]
+        JSONObject slotJson = new JSONObject();
         for (Slot slot : allSlots) {
-            // TODO: create JSON array of slots in schedule
-            if (slot.getDay() <= 7) {
-                // add to JSON
-            } else {
-                // don't add to JSON
-            }
+            Gson gson = new GsonBuilder().create();
+            JSONParser parser = new JSONParser();
+            slotJson = (JSONObject) parser.parse(gson.toJson(slot));
+            allSlotsJson.add(slotJson);
         }
-        return "";
+        return allSlotsJson.toString();
     }
 
     public void setBid(UUID sessionID, int slotID, int percentage) {
@@ -140,5 +142,9 @@ public class SystemFacade {
         JSONObject response = new JSONObject();
         response.put(type, content);
         return response.toJSONString();
+    }
+
+    public void updatePointsForStudent(String studentID, int newPoints) {
+        Controller.setStudentPoints(studentID, newPoints);
     }
 }
