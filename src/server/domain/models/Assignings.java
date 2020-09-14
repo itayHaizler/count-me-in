@@ -48,4 +48,7 @@ public class Assignings implements Serializable {
         return date;
     }
 
+    public void setStudent(Student s){
+        this.student = s;
+    }
 }

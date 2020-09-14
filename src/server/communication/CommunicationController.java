@@ -15,6 +15,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.UUID;
 
 public class CommunicationController {
@@ -107,7 +108,7 @@ public class CommunicationController {
 
 
         //-----------------------------------------FacultyHandler cases------------------------------------------
-        //accept: {session_id:String, email:String, password:String}
+        //accept: {session_id:String, email:String, password:String, studentID:String}
         //retrieve: {SUCCESS: "Valid Admin"} OR ERROR
         server.createContext("/count-me-in/loginFaculty", he -> {
             final Headers headers = he.getResponseHeaders();
@@ -140,7 +141,8 @@ public class CommunicationController {
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
                 int slotID = (requestJson.containsKey("slotOD")) ? Integer.parseInt(requestJson.get("slotID").toString()) : null;
-                String response = facultyHandler.getRegisteredStudents(slotID);
+                Date date = (requestJson.containsKey("date")) ? (Date)requestJson.get("slotID") : null;
+                String response = facultyHandler.getRegisteredStudents(slotID, date);
                 headers.set("getRegisteredStudents", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
             } catch (Exception e) {
@@ -186,8 +188,9 @@ public class CommunicationController {
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
                 String email = (requestJson.containsKey("email")) ? (String) requestJson.get("email") : null;
                 String password = (requestJson.containsKey("password")) ? (String) (requestJson.get("password")) : null;
+                String studentID = (requestJson.containsKey("studentID")) ? (String) (requestJson.get("studentID")) : null;
                 String session_id = (requestJson.containsKey("session_id")) ?  (requestJson.get("session_id").toString()) : "";
-                String response = studentHandler.login(UUID.fromString(session_id),email, password);
+                String response = studentHandler.login(UUID.fromString(session_id),email, password, studentID);
                 headers.set("loginStudent", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
             } catch (Exception e) {
@@ -232,7 +235,7 @@ public class CommunicationController {
                 int slotID = (requestJson.containsKey("slotID")) ? Integer.parseInt(requestJson.get("slotID").toString()) : null;
                 int percentage = (requestJson.containsKey("percentage")) ? Integer.parseInt(requestJson.get("percentage").toString()) : null;
                 String session_id = (requestJson.containsKey("session_id")) ?  (requestJson.get("session_id").toString()) : "";
-                //studentHandler.updatePercentage(UUID.fromString(session_id), slotID, percentage);
+                studentHandler.updatePercentage(UUID.fromString(session_id), slotID, percentage);
                 headers.set("updatePercentage", String.format("application/json; charset=%s", UTF8));
                 //sendResponse(he, response);TODO: ???
             }  catch (Exception e) {
