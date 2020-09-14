@@ -27,4 +27,5 @@ public class StudentHandler {
     public String getScheduleBiding(UUID sessionID) throws ParseException {
         return SystemFacade.getInstance().getStudentScheduleForBiding(sessionID);
     }
+
 }

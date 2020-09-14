@@ -9,6 +9,7 @@ import org.json.simple.parser.ParseException;
 import server.dataAccess.Controller;
 import org.json.simple.JSONObject;
 import server.domain.models.Assignings;
+import server.domain.models.Bid;
 import server.domain.models.Slot;
 import server.domain.models.SlotDates;
 
@@ -151,12 +152,15 @@ public class SystemFacade {
         List<Slot> allSlots = Controller.getAllSlotsOfStudent(studentID);
         JSONArray allSlotsJson = new JSONArray();
 
-        // [ {slot id: hour, day, courseId, groupId, duration} ]
+        // [ {slot id: hour, day, courseId, groupId, duration, bidingPercentage} ]
         JSONObject slotJson = new JSONObject();
+        Bid currBid;
         for (Slot slot : allSlots) {
+            currBid = Controller.getBidForSlotOfStudent(slot.getSlotID(),studentID);
             Gson gson = new GsonBuilder().create();
             JSONParser parser = new JSONParser();
             slotJson = (JSONObject) parser.parse(gson.toJson(slot));
+            slotJson.put("bidingPercentage", currBid.getPercentage());
             allSlotsJson.add(slotJson);
         }
         return allSlotsJson.toString();
@@ -176,13 +180,14 @@ public class SystemFacade {
         // update points for winning students
     }
 
+    public void updatePointsForStudent(String studentID, int newPoints) {
+        Controller.setStudentPoints(studentID, newPoints);
+    }
+
     public String createJSONMsg(String type, String content) {
         JSONObject response = new JSONObject();
         response.put(type, content);
         return response.toJSONString();
     }
 
-    public void updatePointsForStudent(String studentID, int newPoints) {
-        Controller.setStudentPoints(studentID, newPoints);
-    }
 }

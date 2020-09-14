@@ -1,6 +1,7 @@
 package server.dataAccess;
 
 import server.domain.models.Assignings;
+import server.domain.models.Bid;
 import server.domain.models.Slot;
 import server.domain.models.SlotDates;
 
@@ -49,6 +50,10 @@ public class Controller {
     }
 
     public static String getStudentID(String email, String password){
+        return null;
+    }
+
+    public static Bid getBidForSlotOfStudent(int slotID, String studentID) {
         return null;
     }
 }

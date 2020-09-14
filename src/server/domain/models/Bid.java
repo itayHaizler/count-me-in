@@ -1,9 +1,13 @@
 package server.domain.models;
 
 public class Bid {
-    int slotID;
-    String studentID;
-    int percentage;
+    private int slotID;
+    private String studentID;
+    private int percentage;
 
     public Bid(){}
+
+    public int getPercentage() {
+        return percentage;
+    }
 }
