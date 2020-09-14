@@ -8,16 +8,14 @@ import java.util.Date;
 
 public class Slot {
 
-    private Date date;
     private String courseID;
     private int groupID;
     private int slotID;
+    private int day;
+    private int hour;
+    private int duration;
 
     public Slot(){}
-
-    public Date getDate() {
-        return date;
-    }
 
     public int getSlotID() {
         return slotID;

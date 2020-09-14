@@ -10,6 +10,7 @@ import server.dataAccess.Controller;
 import org.json.simple.JSONObject;
 import server.domain.models.Assignings;
 import server.domain.models.Slot;
+import server.domain.models.SlotDates;
 
 
 import java.util.HashMap;
@@ -119,7 +120,7 @@ public class SystemFacade {
         if(se == null)
             throw new IllegalArgumentException("Invalid Session ID");
         String studentID = se.getStudentID();
-        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID, false);
+        List<SlotDates> allSlotsDates = Controller.getSlotsDatesOfStudent(studentID);
         List<Assignings> assignings = Controller.getAssigningsOfStudent(studentID);
         HashMap<Integer, Boolean> greenSlots = new HashMap<Integer, Boolean>();
         for (Assignings as : assignings) {
@@ -128,27 +129,29 @@ public class SystemFacade {
 
         JSONArray allSlotsJson = new JSONArray();
 
-        // [ {slot id: , date, courseId, groupId, isApproved}]
+        // [ {slot id: day, hour, date, courseId, groupId, isApproved}]
         JSONObject slotJson = new JSONObject();
-        for (Slot slot : allSlots) {
+        for (SlotDates slotDate : allSlotsDates) {
+            Slot slot = Controller.getSlotOfSlotDate(slotDate);
             Gson gson = new GsonBuilder().create();
             JSONParser parser = new JSONParser();
             slotJson = (JSONObject) parser.parse(gson.toJson(slot));
+            slotJson.put("date", slotDate.getDate());
             slotJson.put("isApproved", greenSlots.containsKey(slot.getSlotID()));
             allSlotsJson.add(slotJson);
         }
         return allSlotsJson.toString();
     }
 
-    public String getStudentScheduleForBiding(UUID sessionID) throws ParseException{
+    public String getStudentScheduleForBiding(UUID sessionID) throws ParseException {
         Session se = active_sessions.get(sessionID);
         if(se == null)
             throw new IllegalArgumentException("Invalid Session ID");
         String studentID = se.getStudentID();
-        List<Slot> allSlots = Controller.getSlotsOfStudent(studentID, true);
+        List<Slot> allSlots = Controller.getAllSlotsOfStudent(studentID);
         JSONArray allSlotsJson = new JSONArray();
 
-        // [ {slot id: , date, courseId, groupId} ]
+        // [ {slot id: hour, day, courseId, groupId, duration} ]
         JSONObject slotJson = new JSONObject();
         for (Slot slot : allSlots) {
             Gson gson = new GsonBuilder().create();
