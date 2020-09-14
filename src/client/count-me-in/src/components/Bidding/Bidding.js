@@ -98,6 +98,7 @@ function Bidding() {
                         endDayHour={21}
                         excludedDays={[7, 6]}
                         timeTableCellComponent={TimeTableCell}
+                        cellDuration={30}
                     />
 
                     <Appointments

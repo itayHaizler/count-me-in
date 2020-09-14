@@ -39,7 +39,9 @@
   "devDependencies": {
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.56",
+    "axios": "^0.20.0",
     "jss-rtl": "^0.3.0",
+    "react-axios": "^2.0.3",
     "react-hook-form": "^6.8.2"
   }
 }
