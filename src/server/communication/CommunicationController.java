@@ -106,12 +106,11 @@ public class CommunicationController {
 
         //-----------------------------------------FacultyHandler cases------------------------------------------
         //accept: {session_id:String, email:String, password:String}
-        //retrieve: {SUCCESS: msg} OR ERROR //???????
+        //retrieve: {SUCCESS: "Valid Admin"} OR ERROR
         server.createContext("/count-me-in/loginFaculty", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -130,12 +129,11 @@ public class CommunicationController {
         });
 
         //accept: {slotID:int}
-        //retrieve: ???????
+        //retrieve: [{name:int, studentID:int}, ..]
         server.createContext("/count-me-in/getRegisteredStudents", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -152,12 +150,11 @@ public class CommunicationController {
         });
 
         //accept: {courseID:String, groupID:int}
-        //retrieve: ???????
+        //retrieve: [{courseID:String, groupID:int, slotID:int, day:int, hour:int, duration:int}, ..]
         server.createContext("/count-me-in/getSlots", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -177,12 +174,11 @@ public class CommunicationController {
 
         //-----------------------------------------StudentHandler cases------------------------------------------
         //accept: {session_id:String, email:String, password:String}
-        //retrieve: ???????
+        //retrieve: {SUCCESS: "Valid Student"}
         server.createContext("/count-me-in/loginStudent", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -201,12 +197,11 @@ public class CommunicationController {
         });
 
         //accept: {session_id:String}
-        //retrieve: ???????
+        //retrieve: {SUCCESS:int}
         server.createContext("/count-me-in/getStudentPoints", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -224,12 +219,11 @@ public class CommunicationController {
 
 
         //accept: {session_id:String, slotID:int, percentage:int}
-        //retrieve: ???????
+        //retrieve: NULL
         server.createContext("/count-me-in/updatePercentage", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -248,12 +242,11 @@ public class CommunicationController {
         });
 
         //accept: {session_id:String}
-        //retrieve: ???????
+        //retrieve: [ {slotID:String, day:int, hour:int, date:int, courseId:String, groupId:int, isApproved:boolean, bidingPercentage:int}, ..]
         server.createContext("/count-me-in/getSchedule", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
@@ -270,12 +263,11 @@ public class CommunicationController {
         });
 
         //accept: {session_id:String}
-        //retrieve: ???????
+        //retrieve: // [{slot id:int, hour:int, day:int, courseId:String, groupId:int, duration:int}, ..]
         server.createContext("/count-me-in/getScheduleBiding", he -> {
             final Headers headers = he.getResponseHeaders();
 
             try {
-                //final String requestMethod = he.getRequestMethod();
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
