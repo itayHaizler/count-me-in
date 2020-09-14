@@ -3,6 +3,7 @@ package server.domain;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -14,10 +15,7 @@ import server.domain.models.Slot;
 import server.domain.models.SlotDates;
 
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SystemFacade {
@@ -64,11 +62,11 @@ public class SystemFacade {
         Controller.setStudentPoints(studentID, newPoints);
     }
 
-    public String getRegisteredStudents(int slotID) {
+    public String getRegisteredStudents(int slotID, Date date) {
         if (!isAdminMode)
             return createJSONMsg("ERROR", "Faculty access only");
         else {
-            List<Assignings> assignings = Controller.getAssigningsOfSlot(slotID);
+            List<Assignings> assignings = Controller.getAssigningsOfSlot(slotID, date);
             JSONArray assigningsJson = new JSONArray();
             JSONObject assJson;
             for (Assignings asg : assignings) {
@@ -93,14 +91,15 @@ public class SystemFacade {
         return jsonArray.toString();
     }
 
-    public String loginStudent(UUID sessionID, String email, String password) {
+    public String loginStudent(UUID sessionID, String email, String password, String studentID) {
         Session se = active_sessions.get(sessionID);
         if(se == null)
             throw new IllegalArgumentException("Invalid Session ID");
-        // TODO: how to validate user???????????
+        if(!Controller.validPassword(email, password))
+            throw new IllegalArgumentException("invalid password");
+
         if (true) {
             this.isAdminMode = false;
-            String studentID = Controller.getStudentID(email, password);
             se.setStudentID(studentID);
             return "Valid Student";
         }
@@ -108,9 +107,12 @@ public class SystemFacade {
     }
 
     public String loginFaculty(UUID sessionID, String email, String password) {
-        // TODO: need to secure this shittttttttttt
+        Session se = active_sessions.get(sessionID);
+        if(se == null)
+            throw new IllegalArgumentException("Invalid Session ID");
         if (email.equals("Admin@post.bgu.ac.il") && password.equals("1234")) {
             this.isAdminMode = true;
+            se.setAdminMode(true);
             return createJSONMsg("SUCCESS", "Valid Admin");
         }
         return "Invalid Admin";

@@ -8,8 +8,8 @@ import java.util.UUID;
 
 public class StudentHandler {
 
-    public String login(UUID sessionID, String email, String password) {
-        return SystemFacade.getInstance().loginStudent(sessionID, email, password);
+    public String login(UUID sessionID, String email, String password, String studentID) {
+        return SystemFacade.getInstance().loginStudent(sessionID, email, password, studentID);
     }
 
     public String getStudentPoints(UUID sessionID) {

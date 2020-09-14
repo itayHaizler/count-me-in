@@ -221,15 +221,111 @@ public class Controller {
     }
 
     public static List<Slot> getSlotsForFacultyMember(String courseID, int groupID) {
-        return null;
+        List<Slot> slots = new LinkedList<>();
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Slot> cr = cb.createQuery(Slot.class);
+            Root<Slot> root = cr.from(Slot.class);
+            cr.where(cb.and(cb.equal(root.get("courseID"), courseID), cb.equal(root.get("groupID"), groupID)));
+            Query<Slot> query = session.createQuery(cr);
+            slots = query.getResultList();
+
+
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return slots;
     }
 
     public static List<Slot> getAllSlotsOfStudent(String studentID) {
-        return null;
+        List<Slot> slots = new LinkedList<>();
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Schedule> cr = cb.createQuery(Schedule.class);
+            Root<Schedule> root = cr.from(Schedule.class);
+            cr.select(root).where(cb.equal(root.get("studentID"), studentID));
+            Query<Schedule> query = session.createQuery(cr);
+            List<Schedule> schedule = query.getResultList();
+
+
+            for(Schedule sched: schedule){
+                slots.add(getSlotByID(sched.getSlotID()));
+            }
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return slots;
+    }
+
+    private static Slot getSlotByID(int slotID) {
+        List<Slot> slots = new LinkedList<>();
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Slot> cr = cb.createQuery(Slot.class);
+            Root<Slot> root = cr.from(Slot.class);
+            cr.select(root).where(cb.equal(root.get("slotID"), slotID));
+            Query<Slot> query = session.createQuery(cr);
+            slots = query.getResultList();
+
+            if(slots == null || slots.isEmpty()){
+                throw new SQLException("wrong student id");
+            }
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return slots.get(0);
     }
 
     public static List<Assignings> getAssigningsOfStudent(String studentID) {
-        // TODO: filter by 13-9-2020 - 25-9-2020
+        // filter by 13-9-2020 - 25-9-2020
         List<Assignings> as = new LinkedList<>();
 
         // Create a session
@@ -267,19 +363,8 @@ public class Controller {
     }
 
     public static List<SlotDates> getSlotsDatesOfStudent(String studentID) {
-        // TODO: filter by 13-9-2020 - 25-9-2020
-
-        return null;
-    }
-
-    public static Slot getSlotOfSlotDate(SlotDates slotDate) {
-        // TODO: return slot of specific slot date
-        return null;
-    }
-
-    public static List<Assignings> getAssigningsOfSlot(int slotID) {
-        // TODO: filter by 13-9-2020 - 25-9-2020 ???????????????????????????? needs to have a date
-        List<Assignings> as = new LinkedList<>();
+        //filter by 13-9-2020 - 25-9-2020
+        List<SlotDates> slots = new LinkedList<>();
 
         // Create a session
         Session session = SESSION_FACTORY.openSession();
@@ -288,16 +373,16 @@ public class Controller {
             // Begin a transaction
             transaction = session.beginTransaction();
             CriteriaBuilder cb = session.getCriteriaBuilder();
-            CriteriaQuery<Assignings> cr = cb.createQuery(Assignings.class);
-            Root<Assignings> root = cr.from(Assignings.class);
+            CriteriaQuery<SlotDates> cr = cb.createQuery(SlotDates.class);
+            Root<SlotDates> root = cr.from(SlotDates.class);
 
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date fromDate = df.parse("2020-09-13 00:00:00");
             Date toDate = df.parse("2020-09-25 00:00:00");
 
-            cr.where(cb.and(cb.equal(root.get("slotID"), slotID), cb.between(root.get("date"), fromDate, toDate)));
-            Query<Assignings> query = session.createQuery(cr);
-            as = query.getResultList();
+            cr.where(cb.and(cb.equal(root.get("studentID"), studentID), cb.between(root.get("date"), fromDate, toDate)));
+            Query<SlotDates> query = session.createQuery(cr);
+            slots = query.getResultList();
 
             // Commit the transaction
             transaction.commit();
@@ -312,7 +397,121 @@ public class Controller {
             // Close the session
             session.close();
         }
-        return as;
+        return slots;
+    }
+
+    public static Slot getSlotOfSlotDate(SlotDates slotDate) {
+        //return slot of specific slot date
+        List<Slot> slots = new LinkedList<>();
+
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Slot> cr = cb.createQuery(Slot.class);
+            Root<Slot> root = cr.from(Slot.class);
+
+            cr.select(root).where(cb.equal(root.get("slotID"), slotDate.getSlotID()));
+            Query<Slot> query = session.createQuery(cr);
+            slots = query.getResultList();
+
+            if(slots == null || slots.isEmpty()){
+                throw new SQLException("wrong slotDate");
+            }
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return slots.get(0);
+    }
+
+
+
+    public static List<Assignings> getAssigningsOfSlot(int slotID, Date date) {
+        List<Assignings> assignings = new LinkedList<>();
+
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Assignings> cr = cb.createQuery(Assignings.class);
+            Root<Assignings> root = cr.from(Assignings.class);
+
+            cr.where(cb.and(cb.equal(root.get("slotID"), slotID), cb.equal(root.get("date"), date)));
+            Query<Assignings> query = session.createQuery(cr);
+            assignings = query.getResultList();
+
+            for(Assignings assign: assignings){
+                assign.setStudent(getStudentByID(assign.getStudentID()));
+            }
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return assignings;
+    }
+
+    private static Student getStudentByID(String studentID) {
+        List<Student> students = new LinkedList<>();
+
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Student> cr = cb.createQuery(Student.class);
+            Root<Student> root = cr.from(Student.class);
+            cr.select(root).where(cb.equal(root.get("studentID"), studentID));
+            Query<Student> query = session.createQuery(cr);
+            students = query.getResultList();
+
+            if(students == null || students.isEmpty()){
+                throw new SQLException("wrong student id");
+            }
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return students.get(0);
+
     }
 
     public static void setStudentBid(String studentID, int slotID, int percentage) {
@@ -355,10 +554,6 @@ public class Controller {
         }
     }
 
-    public static String getStudentID(String email, String password){
-        //TODO:??????????????????No Table
-        return null;
-    }
 
     public static Bid getBidForSlotOfStudent(int slotID, String studentID) {
 
@@ -398,4 +593,9 @@ public class Controller {
         }
         return bid;
     }
+
+    public static boolean validPassword(String email, String password) {
+        return true;
+    }
+
 }
