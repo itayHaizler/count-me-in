@@ -5,6 +5,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import server.dataAccess.Controller;
+import server.domain.models.Student;
 import server.service.FacultyHandler;
 import server.service.SessionHandler;
 import server.service.StudentHandler;
@@ -230,7 +232,7 @@ public class CommunicationController {
                 int slotID = (requestJson.containsKey("slotID")) ? Integer.parseInt(requestJson.get("slotID").toString()) : null;
                 int percentage = (requestJson.containsKey("percentage")) ? Integer.parseInt(requestJson.get("percentage").toString()) : null;
                 String session_id = (requestJson.containsKey("session_id")) ?  (requestJson.get("session_id").toString()) : "";
-                studentHandler.updatePercentage(UUID.fromString(session_id), slotID, percentage);
+                //studentHandler.updatePercentage(UUID.fromString(session_id), slotID, percentage);
                 headers.set("updatePercentage", String.format("application/json; charset=%s", UTF8));
                 //sendResponse(he, response);TODO: ???
             }  catch (Exception e) {
