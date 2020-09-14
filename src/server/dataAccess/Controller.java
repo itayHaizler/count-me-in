@@ -477,7 +477,7 @@ public class Controller {
         return assignings;
     }
 
-    private static Student getStudentByID(String studentID) {
+    public static Student getStudentByID(String studentID) {
         List<Student> students = new LinkedList<>();
 
         // Create a session
