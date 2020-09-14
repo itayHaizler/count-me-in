@@ -11,21 +11,28 @@ import java.util.Date;
 @Table(name = "slotDates")
 public class SlotDates implements Serializable {
 
-    @Id
     @Column(name = "slotID")
     private int slotID;
 
-    @Id
     @Column(name = "date")
     private Date date;
+
+    @Id
+    @Column(name = "slotDateID")
+    private int slotDateID;
 
     public SlotDates() {
 
     }
 
-    public SlotDates(int slotID, Date date) {
+    public SlotDates(int slotID, Date date, int slotDateID) {
+        this.slotDateID = slotDateID;
         this.slotID = slotID;
         this.date = date;
+    }
+
+    public int getSlotDateID() {
+        return this.slotDateID;
     }
 
     public int getSlotID() {

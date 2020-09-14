@@ -32,15 +32,19 @@ public class Slot implements Serializable {
     @Column(name = "duration")
     private int duration;
 
+    @Column(name = "capacity")
+    private int capacity;
+
     public Slot(){}
 
-    public Slot(String courseID, int groupID, int slotID, int day, int hour, int duration){
+    public Slot(String courseID, int groupID, int slotID, int day, int hour, int duration, int capacity){
         this.courseID = courseID;
         this.groupID = groupID;
         this.slotID = slotID;
         this.day = day;
         this.hour = hour;
         this.duration = duration;
+        this.capacity = capacity;
     }
 
     public int getSlotID() {
@@ -60,4 +64,8 @@ public class Slot implements Serializable {
     public int getDuration() {
         return duration;
     }
+
+    public int getCapacity() { return capacity; }
+
+    public void setCapacity(int newCapacity) { this.capacity = newCapacity; }
 }
