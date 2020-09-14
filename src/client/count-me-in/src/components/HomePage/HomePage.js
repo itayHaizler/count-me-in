@@ -14,7 +14,6 @@ import {
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { teal, grey } from '@material-ui/core/colors';
 
-const currentDate = '2020-09-13';
 const schedulerData = [
     { startDate: '2020-09-13T09:45', endDate: '2020-09-13T11:00', title: 'מבוא למדמ"ח', isIn: 0 },
     { startDate: '2020-09-20T09:45', endDate: '2020-09-20T11:00', title: 'מבוא למדמ"ח', isIn: 1 },
@@ -62,15 +61,12 @@ function HomePage() {
                         startDayHour={9}
                         endDayHour={21}
                         timeTableCellComponent={TimeTableCell}
+                        cellDuration={60}
                     />
-
                     <Toolbar />
                     <DateNavigator />
                     <TodayButton />
-                    <Appointments dir={'rtl'}
-                        // appointmentComponent={Appointment}
-                        // appointmentComponent={Appointment}
-                    />
+                    <Appointments dir={'rtl'} />
                     <Resources
                         data={resources}
                     />
