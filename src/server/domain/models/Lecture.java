@@ -7,8 +7,8 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "schedule")
-public class Schedule implements Serializable {
+@Table(name = "lecture")
+public class Lecture implements Serializable {
 
     @Id
     @Column(name = "studentID")
@@ -18,11 +18,11 @@ public class Schedule implements Serializable {
     @Column(name = "slotID")
     private int slotID;
 
-    public Schedule() {
+    public Lecture() {
 
     }
 
-    public Schedule(String studentID, int slotID) {
+    public Lecture(String studentID, int slotID) {
         this.slotID = slotID;
         this.studentID = studentID;
     }
