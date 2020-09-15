@@ -18,8 +18,8 @@ import Axios from 'axios';
 //     { id: 3, startDate: '2020-09-13T12:00', endDate: '2020-09-13T13:30', title: 'קומפילציה', bidingPercentage: 30 },
 // ];
 
-function Bidding() {
-    const [appointments, setAppointments] = useState([]);
+function Bidding({ updatePercents }) {
+    const [appointments, setAppointments] = useState(schedulerData);
     const [showAlert, setAlert] = useState(false);
     const headers = {
         'Content-Type': 'text/plain;charset=UTF-8',
@@ -56,6 +56,9 @@ function Bidding() {
     useEffect(() => {
         loadAppointments()
     }, [loadAppointments])
+
+    const totalPercents = appointments.reduce((total, { percents }) => total + parseInt(percents), 0)
+    updatePercents(totalPercents)
 
     const TimeTableCell = ({ onDoubleClick, ...restProps }) => {
         return <WeekView.TimeTableCell onDoubleClick={undefined} {...restProps} />;
@@ -104,6 +107,7 @@ function Bidding() {
                                 return appointment;
                             })
                             setAppointments(data);
+                            updatePercents(sum)
                         }
                     }}
                         aria-label="save" className={classes.margin} size="small">
@@ -121,8 +125,8 @@ function Bidding() {
                     <div className={classes.alert}>
                         <Alert className={classes.innerMessage} severity="warning">
                             <AlertTitle>שים לב</AlertTitle>
-                        סך האחוזים חייב להיות עד 100.
-                                </Alert>
+                    סך האחוזים חייב להיות עד 100.
+                </Alert>
                     </div>
                 }
                 <Scheduler

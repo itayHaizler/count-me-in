@@ -35,10 +35,15 @@ function Login({ onLogin }) {
             }, {
                 headers: headers
             }).then((data) => {
-                onLogin({ email: email })
-                history.replace("home");
+                onLogin({ email: email, isSegel: isSegel })
+
+                if (isSegel)
+                    history.replace("faculty");
+                else
+                    history.replace("home");
 
             }).catch(() => console.log("OOPS"))
+
 
         }
     }
@@ -61,19 +66,18 @@ function Login({ onLogin }) {
                             />
                         }
                         label="התחבר כאיש סגל"
-
                     />
                     <Button className={classes.loginBtn} variant="outlined" size="medium" color={'default'} onClick={validate}>
                         התחבר
                 </Button>
                 </form>
-            </div>
-            {showAlert &&
-                <Alert severity="error">
-                    <AlertTitle>שגיאה</AlertTitle>
+                {showAlert &&
+                    <Alert severity="error">
+                        <AlertTitle>שגיאה</AlertTitle>
                     חייב להכניס מייל וסיסמא
                 </Alert>
-            }
+                }
+            </div>
         </div>
     )
 }
