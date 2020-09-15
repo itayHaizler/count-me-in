@@ -33,7 +33,7 @@ public class SystemInitHandler {
                 Controller.create(s);
             }
             else if (splitedCommand[0].equals("addSlot")) {//[String courseID, int groupID, int slotID, int day, int hour, int duration, int capacity]
-                Slot s = new Slot(splitedCommand[1], Integer.valueOf(splitedCommand[2]), Integer.valueOf(splitedCommand[3]), Integer.valueOf(splitedCommand[4]), Integer.valueOf(splitedCommand[5]), Integer.valueOf(splitedCommand[6]), Integer.valueOf(splitedCommand[7]));
+                Slot s = new Slot(splitedCommand[7], Integer.valueOf(splitedCommand[1]), Integer.valueOf(splitedCommand[2]), Integer.valueOf(splitedCommand[3]), Integer.valueOf(splitedCommand[4]), Integer.valueOf(splitedCommand[5]), Integer.valueOf(splitedCommand[6]));
                 Controller.create(s);
             }
             else if (splitedCommand[0].equals("addSlotDate")) {//[int slotID, Date date, int slotDateID]

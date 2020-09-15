@@ -38,6 +38,12 @@ public class Starter {
 //        Controller.create(b2);
 //        Controller.create(b3);
 
+        try {
+            String s = SystemFacade.getInstance().getSlots("תכנות מערכות", 1);
+            System.out.println(s);
+        } catch (org.json.simple.parser.ParseException e) {
+            e.printStackTrace();
+        }
         SystemFacade.getInstance().calculateBiding();
     }
 

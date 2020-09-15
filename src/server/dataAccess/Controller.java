@@ -688,4 +688,43 @@ public class Controller {
         return slotDates;
     }
 
+    public static List<SlotDates> getAllSlotDatesBySlotID(int slotID) {
+
+        List<SlotDates> slotDates = new LinkedList<>();
+
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<SlotDates> cr = cb.createQuery(SlotDates.class);
+            Root<SlotDates> root = cr.from(SlotDates.class);
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date fromDate = df.parse("2020-09-13 00:00:00");
+            Date toDate = df.parse("2020-09-25 00:00:00");
+
+            cr.where(cb.and(cb.equal(root.get("slotID"), slotID), cb.between(root.get("date"), fromDate, toDate)));
+
+            Query<SlotDates> query = session.createQuery(cr);
+            slotDates = query.getResultList();
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return slotDates;
+    }
+
 }

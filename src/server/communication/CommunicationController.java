@@ -132,7 +132,7 @@ public class CommunicationController {
         });
 
         //accept: {slotID:int}
-        //retrieve: [{name:int, studentID:int}, ..]
+        //retrieve: [{name:String, studentID:int}, ..]
         server.createContext("/count-me-in/getRegisteredStudents", he -> {
             final Headers headers = he.getResponseHeaders();
 
@@ -154,7 +154,7 @@ public class CommunicationController {
         });
 
         //accept: {courseID:String, groupID:int}
-        //retrieve: [{courseID:String, groupID:int, slotID:int, day:int, hour:int, duration:int}, ..]
+        //retrieve: [{slotID:String, date:Date}, ..]
         server.createContext("/count-me-in/getSlots", he -> {
             final Headers headers = he.getResponseHeaders();
 

@@ -83,10 +83,13 @@ public class SystemFacade {
         List<Slot> slots = Controller.getSlotsForFacultyMember(courseID, groupID);
         JSONArray jsonArray = new JSONArray();
         for (Slot slot : slots) {
-            Gson gson = new GsonBuilder().create();
-            JSONParser parser = new JSONParser();
-            JSONObject slotJson = (JSONObject) parser.parse(gson.toJson(slot));
-            jsonArray.add(slotJson);
+            List<SlotDates> sds = Controller.getAllSlotDatesBySlotID(slot.getSlotID());
+            for(SlotDates sd: sds) {
+                JSONObject jo = new JSONObject();
+                jo.put("slotID", sd.getSlotID());
+                jo.put("date", sd.getDate());
+                jsonArray.add(jo);
+            }
         }
         return jsonArray.toString();
     }
