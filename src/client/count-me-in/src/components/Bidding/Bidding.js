@@ -19,7 +19,7 @@ import Axios from 'axios';
 // ];
 
 function Bidding({ updatePercents }) {
-    const [appointments, setAppointments] = useState(schedulerData);
+    const [appointments, setAppointments] = useState([]);
     const [showAlert, setAlert] = useState(false);
     const headers = {
         'Content-Type': 'text/plain;charset=UTF-8',
