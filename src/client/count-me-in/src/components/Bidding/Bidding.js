@@ -12,28 +12,46 @@ import { TextField, IconButton } from '@material-ui/core';
 import SaveIcon from '@material-ui/icons/Save';
 import Axios from 'axios';
 
-const schedulerData = [
-    { id: 1, startDate: '2020-09-13T09:45', endDate: '2020-09-13T11:00', title: 'מבוא למדמ"ח', percents: 30 },
-    { id: 2, startDate: '2020-09-15T10:45', endDate: '2020-09-15T12:00', title: 'מבוא למדמ"ח', percents: 40 },
-    { id: 3, startDate: '2020-09-13T12:00', endDate: '2020-09-13T13:30', title: 'קומפילציה', percents: 30 },
-];
+// const schedulerData = [
+//     { id: 1, startDate: '2020-09-13T09:45', endDate: '2020-09-13T11:00', title: 'מבוא למדמ"ח', bidingPercentage: 30 },
+//     { id: 2, startDate: '2020-09-15T10:45', endDate: '2020-09-15T12:00', title: 'מבוא למדמ"ח', bidingPercentage: 40 },
+//     { id: 3, startDate: '2020-09-13T12:00', endDate: '2020-09-13T13:30', title: 'קומפילציה', bidingPercentage: 30 },
+// ];
 
 function Bidding() {
-    const [appointments, setAppointments] = useState(schedulerData);
+    const [appointments, setAppointments] = useState([]);
     const [showAlert, setAlert] = useState(false);
     const headers = {
         'Content-Type': 'text/plain;charset=UTF-8',
     }
     const loadAppointments = useCallback(() => {
-        Axios.post(`http://localhost:8080/count-me-in/getScheduleBiding`,{
+        Axios.post(`http://localhost:8080/count-me-in/getScheduleBiding`, {
             session_id: localStorage.getItem("sessionId")
-        } ,{
+        }, {
             headers: headers
-        }).then((response) => {
-            console.log(response.data);
-            setAppointments(response.data);
+        }).then(({ data }) => {
+            console.log(data);
+            const newAppointments = data.map((appointment) => {
+                const now = new Date();
+                const diffDay = appointment.day - now.getDay();
+                now.setHours(now.getHours() + 24 * diffDay);
+                now.setHours(appointment.hour);
+                const end = new Date(now);
+                end.setHours(end.getHours() + appointment.duration);
+                const newApp = {
+                    id: appointment.slotID,
+                    startDate: now.toISOString(),
+                    endDate: end.toISOString(),
+                    title: appointment.courseID,
+                    bidingPercentage: appointment.bidingPercentage
+                }
+
+                return newApp;
+            })
+
+            setAppointments(newAppointments);
         });
-      }, []);
+    }, []);
 
     useEffect(() => {
         loadAppointments()
@@ -46,7 +64,7 @@ function Bidding() {
     const BiddingSlot = ({ style, ...restProps }) => {
         const startDate = new Date(restProps.data.startDate)
         const endDate = new Date(restProps.data.endDate)
-        const [percents, setPercents] = useState(restProps.data.percents);
+        const [percents, setPercents] = useState(restProps.data.bidingPercentage);
 
         return (
             <Appointments.AppointmentContent dir={'rtl'} {...restProps}>
@@ -70,7 +88,7 @@ function Bidding() {
                         let sum = 0;
                         appointments.forEach((appointment) => {
                             if (appointment.id != restProps.data.id)
-                                sum += appointment.percents;
+                                sum += appointment.bidingPercentage;
                             else
                                 sum += percents;
                         })
@@ -82,7 +100,7 @@ function Bidding() {
                         } else {
                             const data = appointments.map((appointment) => {
                                 if (appointment.id === restProps.data.id)
-                                    appointment.percents = percents;
+                                    appointment.bidingPercentage = percents;
                                 return appointment;
                             })
                             setAppointments(data);
