@@ -9,14 +9,14 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import server.dataAccess.Controller;
 import org.json.simple.JSONObject;
-import server.domain.models.Assignings;
-import server.domain.models.Bid;
-import server.domain.models.Slot;
-import server.domain.models.SlotDates;
+import server.domain.models.*;
 
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Date;
+
 
 public class SystemFacade {
 
@@ -83,10 +83,13 @@ public class SystemFacade {
         List<Slot> slots = Controller.getSlotsForFacultyMember(courseID, groupID);
         JSONArray jsonArray = new JSONArray();
         for (Slot slot : slots) {
-            Gson gson = new GsonBuilder().create();
-            JSONParser parser = new JSONParser();
-            JSONObject slotJson = (JSONObject) parser.parse(gson.toJson(slot));
-            jsonArray.add(slotJson);
+            List<SlotDates> sds = Controller.getAllSlotDatesBySlotID(slot.getSlotID());
+            for(SlotDates sd: sds) {
+                JSONObject jo = new JSONObject();
+                jo.put("slotID", sd.getSlotID());
+                jo.put("date", sd.getDate());
+                jsonArray.add(jo);
+            }
         }
         return jsonArray.toString();
     }
@@ -125,9 +128,9 @@ public class SystemFacade {
         String studentID = se.getStudentID();
         List<SlotDates> allSlotsDates = Controller.getSlotsDatesOfStudent(studentID);
         List<Assignings> assignings = Controller.getAssigningsOfStudent(studentID);
-        HashMap<Integer, Boolean> greenSlots = new HashMap<Integer, Boolean>();
+        HashMap<Date, Boolean> greenSlots = new HashMap<>();
         for (Assignings as : assignings) {
-            greenSlots.put(as.getSlotID(), true);
+            greenSlots.put(as.getDate(), true);
         }
 
         JSONArray allSlotsJson = new JSONArray();
@@ -140,7 +143,7 @@ public class SystemFacade {
             JSONParser parser = new JSONParser();
             slotJson = (JSONObject) parser.parse(gson.toJson(slot));
             slotJson.put("date", slotDate.getDate());
-            slotJson.put("isApproved", greenSlots.containsKey(slot.getSlotID()));
+            slotJson.put("isApproved", greenSlots.containsKey(slotDate.getDate()));
             allSlotsJson.add(slotJson);
         }
         return allSlotsJson.toString();
@@ -175,11 +178,30 @@ public class SystemFacade {
         Controller.setStudentBid(se.getStudentID(), slotID, percentage);
     }
 
-    public void calculateBiding() {
-        // get all bids
-        // calculate points of every student per slot
-        // choose top capacity students with highest points
-        // update points for winning students
+    public void calculateBiding() throws java.text.ParseException {
+        // get all slots id
+        List<SlotDates> slotDates = Controller.getAllSlotDatesRange();
+        HashMap<String, Integer> studWinBids;
+        // studentIDWinner, Points
+        for (SlotDates sl: slotDates) {
+            Slot currSlot = Controller.getSlotByID(sl.getSlotID());
+            int capacity = currSlot.getCapacity();
+            studWinBids = Controller.getAssignedStudentsForSlot(sl.getSlotID(), capacity);
+
+            Assignings as;
+            Student stud;
+            for(String studentID: studWinBids.keySet()){
+                stud = Controller.getStudentByID(studentID);
+                as = new Assignings(sl.getSlotDateID(), stud, sl.getDate());
+
+                //save new assigning to DB
+                Controller.create(as);
+
+                //update student points
+                //stud.setTotalPoints(stud.getTotalPoints() - studWinBids.get(studentID));
+                updatePointsForStudent(stud.getID(),stud.getTotalPoints() - (studWinBids.get(studentID)/100)    );
+            }
+        }
     }
 
     public void updatePointsForStudent(String studentID, int newPoints) {

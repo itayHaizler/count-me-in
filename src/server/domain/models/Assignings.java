@@ -9,43 +9,42 @@ import java.util.Date;
 public class Assignings implements Serializable {
 
     @Id
-    @Column(name="slotID")
-    private int slotID;
+    @Column(name="slotDateID")
+    private int slotDateID;
 
     @Id
     @Column(name = "studentID")
     private String studentID;
 
-    @Transient
-    private Student student;
-
-    @Id
     @Column(name = "date")
     private Date date;
 
+    @Transient
+    private Student student;
+
     public Assignings(){}
 
-    public Assignings(int slotID, Student student, Date date){
+    public Assignings(int slotDateID, Student student, Date date){
         this.student = student;
         this.studentID = student.getID();
-        this.slotID = slotID;
+        this.slotDateID = slotDateID;
         this.date = date;
     }
 
-    public int getSlotID() {
-        return slotID;
+    public int getSlotDateID() {
+        return slotDateID;
     }
 
     public String getStudentID() {
         return studentID;
     }
 
-    public Student getStudent() {
-        return student;
+    public Date getDate() {
+        return this.date;
     }
 
-    public Date getDate() {
-        return date;
+    public Student getStudent() {
+        return student;
     }
 
     public void setStudent(Student s){

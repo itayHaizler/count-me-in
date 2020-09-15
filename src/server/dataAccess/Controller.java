@@ -1,19 +1,17 @@
 package server.dataAccess;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 import org.hibernate.service.ServiceRegistry;
 import server.domain.models.*;
 
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.math.BigInteger;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -36,9 +34,8 @@ public class Controller {
 
         config.addAnnotatedClass(Assignings.class);
         config.addAnnotatedClass(Bid.class);
-        config.addAnnotatedClass(Schedule.class);
+        config.addAnnotatedClass(Lecture.class);
         config.addAnnotatedClass(Slot.class);
-        config.addAnnotatedClass(SlotCapacity.class);
         config.addAnnotatedClass(SlotDates.class);
         config.addAnnotatedClass(Student.class);
 
@@ -262,14 +259,14 @@ public class Controller {
             // Begin a transaction
             transaction = session.beginTransaction();
             CriteriaBuilder cb = session.getCriteriaBuilder();
-            CriteriaQuery<Schedule> cr = cb.createQuery(Schedule.class);
-            Root<Schedule> root = cr.from(Schedule.class);
+            CriteriaQuery<Lecture> cr = cb.createQuery(Lecture.class);
+            Root<Lecture> root = cr.from(Lecture.class);
             cr.select(root).where(cb.equal(root.get("studentID"), studentID));
-            Query<Schedule> query = session.createQuery(cr);
-            List<Schedule> schedule = query.getResultList();
+            Query<Lecture> query = session.createQuery(cr);
+            List<Lecture> schedule = query.getResultList();
 
 
-            for(Schedule sched: schedule){
+            for(Lecture sched: schedule){
                 slots.add(getSlotByID(sched.getSlotID()));
             }
 
@@ -289,7 +286,7 @@ public class Controller {
         return slots;
     }
 
-    private static Slot getSlotByID(int slotID) {
+    public static Slot getSlotByID(int slotID) {
         List<Slot> slots = new LinkedList<>();
         // Create a session
         Session session = SESSION_FACTORY.openSession();
@@ -373,16 +370,31 @@ public class Controller {
             // Begin a transaction
             transaction = session.beginTransaction();
             CriteriaBuilder cb = session.getCriteriaBuilder();
-            CriteriaQuery<SlotDates> cr = cb.createQuery(SlotDates.class);
-            Root<SlotDates> root = cr.from(SlotDates.class);
+            CriteriaQuery<Lecture> cr = cb.createQuery(Lecture.class);
+            Root<Lecture> root = cr.from(Lecture.class);
 
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date fromDate = df.parse("2020-09-13 00:00:00");
-            Date toDate = df.parse("2020-09-25 00:00:00");
+            cr.select(root).where(cb.equal(root.get("studentID"), studentID));
+            Query<Lecture> query = session.createQuery(cr);
+            List<Lecture> schedule = query.getResultList();
 
-            cr.where(cb.and(cb.equal(root.get("studentID"), studentID), cb.between(root.get("date"), fromDate, toDate)));
-            Query<SlotDates> query = session.createQuery(cr);
-            slots = query.getResultList();
+            List<SlotDates> slotDates;
+
+            for (Lecture lecture: schedule) {
+                int slotID = lecture.getSlotID();
+
+                CriteriaQuery<SlotDates> cr2 = cb.createQuery(SlotDates.class);
+                Root<SlotDates> root2 = cr2.from(SlotDates.class);
+
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date fromDate = df.parse("2020-09-13 00:00:00");
+                Date toDate = df.parse("2020-09-25 00:00:00");
+
+                cr.where(cb.and(cb.equal(root2.get("slotID"), slotID), cb.between(root2.get("date"), fromDate, toDate)));
+                Query<SlotDates> query2 = session.createQuery(cr2);
+                slotDates = query2.getResultList();
+
+                slots.addAll(slotDates);
+            }
 
             // Commit the transaction
             transaction.commit();
@@ -399,6 +411,7 @@ public class Controller {
         }
         return slots;
     }
+
 
     public static Slot getSlotOfSlotDate(SlotDates slotDate) {
         //return slot of specific slot date
@@ -477,7 +490,7 @@ public class Controller {
         return assignings;
     }
 
-    private static Student getStudentByID(String studentID) {
+    public static Student getStudentByID(String studentID) {
         List<Student> students = new LinkedList<>();
 
         // Create a session
@@ -596,6 +609,122 @@ public class Controller {
 
     public static boolean validPassword(String email, String password) {
         return true;
+    }
+
+
+    public static HashMap<String, Integer> getAssignedStudentsForSlot(int slotID, int capacity) {
+        // studentID, points
+        HashMap<String, Integer> assigns = new HashMap<>();
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+
+            SQLQuery query = session.createSQLQuery("SELECT bid.studentID, bid.percentage * student.totalPoints as bidSum\n" +
+                    "FROM countmein.bid JOIN countmein.student\n" +
+                    "WHERE bid.studentID = student.studentID AND slotID = "+slotID+"\n" +
+                    "order by bidSum desc\n" +
+                    "LIMIT "+ capacity);
+
+            List<Object[]> rows = query.list();
+            for(Object[] row : rows) {
+                assigns.put((String)row[0], ((BigInteger)row[1]).intValue());
+            }
+
+            // Commit the transaction
+            transaction.commit();
+
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return assigns;
+    }
+
+    public static List<SlotDates> getAllSlotDatesRange() {
+
+        List<SlotDates> slotDates = new LinkedList<>();
+
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<SlotDates> cr = cb.createQuery(SlotDates.class);
+            Root<SlotDates> root = cr.from(SlotDates.class);
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date fromDate = df.parse("2020-09-13 00:00:00");
+            Date toDate = df.parse("2020-09-18 00:00:00");
+
+            cr.select(root).where(cb.between(root.get("date"), fromDate, toDate));
+            Query<SlotDates> query = session.createQuery(cr);
+            slotDates = query.getResultList();
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return slotDates;
+    }
+
+    public static List<SlotDates> getAllSlotDatesBySlotID(int slotID) {
+
+        List<SlotDates> slotDates = new LinkedList<>();
+
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<SlotDates> cr = cb.createQuery(SlotDates.class);
+            Root<SlotDates> root = cr.from(SlotDates.class);
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date fromDate = df.parse("2020-09-13 00:00:00");
+            Date toDate = df.parse("2020-09-25 00:00:00");
+
+            cr.where(cb.and(cb.equal(root.get("slotID"), slotID), cb.between(root.get("date"), fromDate, toDate)));
+
+            Query<SlotDates> query = session.createQuery(cr);
+            slotDates = query.getResultList();
+
+            // Commit the transaction
+            transaction.commit();
+        } catch (Exception ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+        return slotDates;
     }
 
 }
