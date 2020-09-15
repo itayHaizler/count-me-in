@@ -7,11 +7,19 @@
     justify-content: center;
     align-content: center;
     position: fixed;
-    bottom: 0;
+    top: auto;
     left: 0;
     width: 100%;
+    z-index: 99999999;
+}
+.percentLabel {
+    line-height: 1.7!important;
 }
 
+.bidPercent {
+    display: flex;
+    flex-direction: row;
+}
 .percent {
     width: 5vw!important;
     /* height: 2vh!important; */

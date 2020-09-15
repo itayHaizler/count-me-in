@@ -23,7 +23,6 @@ public class SystemInitHandler {
             catch (Exception e){
                 System.out.println(e.getMessage());
             }
-
         }
 
         private void executeCommand(String command) throws ParseException {

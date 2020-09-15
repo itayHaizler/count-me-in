@@ -12,8 +12,8 @@ public class FacultyHandler {
         return SystemFacade.getInstance().loginFaculty(sessionID, email, password);
     }
 
-    public String getRegisteredStudents(int slotID, Date date) {
-        return SystemFacade.getInstance().getRegisteredStudents(slotID, date);
+    public String getRegisteredStudents(int slotID) {
+        return SystemFacade.getInstance().getRegisteredStudents(slotID);
     }
 
     public String getSlots(String courseID, int groupID) throws ParseException {

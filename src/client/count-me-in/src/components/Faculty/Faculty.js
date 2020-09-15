@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import TextField from '@material-ui/core/TextField';
 import classes from './Faculty.module.css';
 import Button from '@material-ui/core/Button';
@@ -10,6 +10,7 @@ import { Checkbox, FormControlLabel } from '@material-ui/core';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import FormControl from '@material-ui/core/FormControl';
+import Axios from 'axios';
 
 const dates = [
     { Date: '2020-09-13T09:45', id: "1" },
@@ -25,12 +26,18 @@ const students = [
 
 function Faculty({ onLogin }) {
     const history = useHistory();
+    const [slots, setSlots] = useState([]);
+    const [assignees, setAssignees] = useState([]);
     const [showAlert, setAlert] = useState(false);
     const [courseName, setCourseName] = useState('');
     const [groupId, setGroupId] = useState('');
     const [searchOn, setSearchOn] = useState(false);
     const [radioOn, setRadioOn] = useState(false);
-    const [value, setValue] = useState('1');
+    const [value, setValue] = useState();
+
+    let dateLabels;
+    if (slots.length > 0)
+        dateLabels = slots.map((slot) => <FormControlLabel value={slot.slotDateID.toString()} control={<Radio />} label={slot.date} />);
 
     const validate = () => {
         if (courseName == "" || groupId == "") {
@@ -39,16 +46,47 @@ function Faculty({ onLogin }) {
                 setAlert(false)
             }, 3000);
         }
-        else
+        else {
             setSearchOn(true);
+            Axios.post(`http://localhost:8080/count-me-in/getSlots`, {
+                session_id: localStorage.getItem("sessionId"),
+                courseID: courseName,
+                groupID: groupId,
+            }, {
+                headers: {
+                    'Content-Type': 'text/plain;charset=UTF-8',
+                }
+            }).then(({ data }) => {
+                const newSlots = data.map((slot)=> {
+                    slot.date = (new Date(slot.date)).toLocaleDateString ();
+                    return slot;
+                })
+
+                setSlots(newSlots)
+            })
+        }
     }
     const handleChange = (event) => {
         setValue(event.target.value);
+        Axios.post(`http://localhost:8080/count-me-in/getRegisteredStudents`, {
+                session_id: localStorage.getItem("sessionId"),
+                slotID: event.target.value,
+            }, {
+                headers: {
+                    'Content-Type': 'text/plain;charset=UTF-8',
+                }
+            }).then(({ data }) => {
+                const newAssignees = data.map((assignee)=> {
+                    // slot.date = (new Date(slot.date)).toLocaleDateString ();
+                    return assignee;
+                })
+
+                setAssignees(data)
+            })
         setRadioOn(true);
     };
 
-    const dateLabels = dates.map((elem) => <FormControlLabel value={elem.id} control={<Radio />} label={elem.Date} />);
-    const studentsList = students.map((elem) => <label> {elem.name} </label>)
+    const studentsList = assignees.map((elem) => <label> {elem.name} </label>)
 
     return (
         <div className={classes.container}>

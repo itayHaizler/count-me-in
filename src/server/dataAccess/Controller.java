@@ -381,15 +381,15 @@ public class Controller {
 
             for (Lecture lecture: schedule) {
                 int slotID = lecture.getSlotID();
-
-                CriteriaQuery<SlotDates> cr2 = cb.createQuery(SlotDates.class);
+                CriteriaBuilder cb2 = session.getCriteriaBuilder();
+                CriteriaQuery<SlotDates> cr2 = cb2.createQuery(SlotDates.class);
                 Root<SlotDates> root2 = cr2.from(SlotDates.class);
 
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Date fromDate = df.parse("2020-09-13 00:00:00");
                 Date toDate = df.parse("2020-09-25 00:00:00");
 
-                cr.where(cb.and(cb.equal(root2.get("slotID"), slotID), cb.between(root2.get("date"), fromDate, toDate)));
+                cr2.where(cb2.and(cb2.equal(root2.get("slotID"), slotID), cb2.between(root2.get("date"), fromDate, toDate)));
                 Query<SlotDates> query2 = session.createQuery(cr2);
                 slotDates = query2.getResultList();
 
@@ -453,7 +453,7 @@ public class Controller {
 
 
 
-    public static List<Assignings> getAssigningsOfSlot(int slotID, Date date) {
+    public static List<Assignings> getAssigningsOfSlot(int slotID) {
         List<Assignings> assignings = new LinkedList<>();
 
         // Create a session
@@ -466,7 +466,7 @@ public class Controller {
             CriteriaQuery<Assignings> cr = cb.createQuery(Assignings.class);
             Root<Assignings> root = cr.from(Assignings.class);
 
-            cr.where(cb.and(cb.equal(root.get("slotID"), slotID), cb.equal(root.get("date"), date)));
+            cr.where(cb.and(cb.equal(root.get("slotDateID"), slotID)));
             Query<Assignings> query = session.createQuery(cr);
             assignings = query.getResultList();
 

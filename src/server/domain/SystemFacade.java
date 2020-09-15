@@ -62,11 +62,11 @@ public class SystemFacade {
         Controller.setStudentPoints(studentID, newPoints);
     }
 
-    public String getRegisteredStudents(int slotID, Date date) {
+    public String getRegisteredStudents(int slotID) {
         if (!isAdminMode)
             return createJSONMsg("ERROR", "Faculty access only");
         else {
-            List<Assignings> assignings = Controller.getAssigningsOfSlot(slotID, date);
+            List<Assignings> assignings = Controller.getAssigningsOfSlot(slotID);
             JSONArray assigningsJson = new JSONArray();
             JSONObject assJson;
             for (Assignings asg : assignings) {
@@ -86,8 +86,8 @@ public class SystemFacade {
             List<SlotDates> sds = Controller.getAllSlotDatesBySlotID(slot.getSlotID());
             for(SlotDates sd: sds) {
                 JSONObject jo = new JSONObject();
-                jo.put("slotID", sd.getSlotID());
-                jo.put("date", sd.getDate());
+                jo.put("slotDateID", sd.getSlotDateID());
+                jo.put("date", sd.getDate().getTime());
                 jsonArray.add(jo);
             }
         }
@@ -142,7 +142,7 @@ public class SystemFacade {
             Gson gson = new GsonBuilder().create();
             JSONParser parser = new JSONParser();
             slotJson = (JSONObject) parser.parse(gson.toJson(slot));
-            slotJson.put("date", slotDate.getDate());
+            slotJson.put("date", slotDate.getDate().getTime());
             slotJson.put("isApproved", greenSlots.containsKey(slotDate.getDate()));
             allSlotsJson.add(slotJson);
         }

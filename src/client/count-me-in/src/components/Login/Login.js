@@ -26,23 +26,33 @@ function Login({ onLogin }) {
             const headers = {
                 'Content-Type': 'text/plain;charset=UTF-8',
             }
+            if (isSegel) {
+                axios.post("http://localhost:8080/count-me-in/loginFaculty", {
+                    email: email,
+                    password: password,
+                    session_id: localStorage.getItem("sessionId")
+                }, {
+                    headers: headers
+                }).then((data) => {
+                    onLogin({ isSegel: isSegel })
 
-            axios.post("http://localhost:8080/count-me-in/loginStudent", {
-                email: email,
-                password: password,
-                studentID: id,
-                session_id: localStorage.getItem("sessionId")
-            }, {
-                headers: headers
-            }).then((data) => {
-                onLogin({ email: email, isSegel: isSegel })
-
-                if (isSegel)
                     history.replace("faculty");
-                else
+                }).catch(() => console.log("OOPS"))
+            } else {
+                axios.post("http://localhost:8080/count-me-in/loginStudent", {
+                    email: email,
+                    password: password,
+                    studentID: id,
+                    session_id: localStorage.getItem("sessionId")
+                }, {
+                    headers: headers
+                }).then((data) => {
+                    onLogin({ studentID: id, isSegel: isSegel })
                     history.replace("home");
 
-            }).catch(() => console.log("OOPS"))
+                }).catch(() => console.log("OOPS"))
+            }
+
 
 
         }

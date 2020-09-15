@@ -18,6 +18,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
+import Axios from 'axios';
 
 const theme = createMuiTheme({
   typography: {
@@ -44,7 +45,8 @@ const theme = createMuiTheme({
 function App() {
   const [loggedUser, setUser] = useState({});
   const [tab, setTab] = useState();
-  const [currP, setCurrP] = useState();
+  const [points, setPoints] = useState("מחשב..")
+  const [currP, setCurrP] = useState(-1);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const isLoggedIn = Object.keys(loggedUser).length != 0;
 
@@ -87,9 +89,9 @@ function App() {
                     horizontal: 'center',
                   }}
                 >
-                <Typography className={classes.typography}>
-                  שלום, ברוכים הבאים לcount me in!
-באתר זה תוכלו להרשם להרצאות המתקיימות הסמסטר בצורה היברידית והמערכת תחשב ותבחר מי יורשה להכנס לשיעור הפרונטלי בצורה הוגנת. הינך מקבל סך נקודות שבועיות אשר מצטברות משבוע לשבוע. עלייך לחלק את הנקודות שברשותך בין הקורסים הנמצאים במערכת השעות שלך. החלוקה תעשה בעזרת חלוקת אחוזים. ברשותך 100% אותם תוכל לחלק בין הקורסים השונים. שים לב כי החלוקה נתונה לשיקול דעתך, אינך חייב לחלק את כל האחוזים ואינך חייב לחלק אחוזים לכל קורס. לאחר מכן המערכת תשקלל את בחירות כל התלמידים ותבחר מי ייכנס לכל שיעור. את חלוקת האחוזים תוכל לשנות באופן דינאמי בלשונית biding.
+                  <Typography className={classes.typography}>
+                    שלום, ברוכים הבאים לcount me in!
+                    באתר זה תוכלו להרשם להרצאות המתקיימות הסמסטר בצורה היברידית והמערכת תחשב ותבחר מי יורשה להכנס לשיעור הפרונטלי בצורה הוגנת. הינך מקבל סך נקודות שבועיות אשר מצטברות משבוע לשבוע. עלייך לחלק את הנקודות שברשותך בין הקורסים הנמצאים במערכת השעות שלך. החלוקה תעשה בעזרת חלוקת אחוזים. ברשותך 100% אותם תוכל לחלק בין הקורסים השונים. שים לב כי החלוקה נתונה לשיקול דעתך, אינך חייב לחלק את כל האחוזים ואינך חייב לחלק אחוזים לכל קורס. לאחר מכן המערכת תשקלל את בחירות כל התלמידים ותבחר מי ייכנס לכל שיעור. את חלוקת האחוזים תוכל לשנות באופן דינאמי בלשונית biding.
 את מערכת השעות והשיבוצים לשבועיים הקרובים תוכל לראות בלשונית schedule כאשר השיעורים אליהם הצלחת להיכנס יסומנו בירוק, ואלה שלא יסומנו באפור. שים לב שכל חלוקת אחוזים רלוונטית לשבוע השלישי.</Typography>
                 </Popover>
               </div>
@@ -105,10 +107,10 @@ function App() {
               </div>
             }
             {isLoggedIn && !loggedUser.isSegel &&
-              <label className={classes.percents}><strong>אחוזים: {currP}%</strong></label>
+              <label className={classes.points}><strong>נקודות: {points}</strong></label>
             }
-            {isLoggedIn && !loggedUser.isSegel &&
-              <label className={classes.points}><strong>נקודות: 1500</strong></label>
+            {isLoggedIn && !loggedUser.isSegel && currP > -1 && tab == 2 &&
+              <label className={classes.percents}><strong>אחוזים: {currP}%</strong></label>
             }
             {isLoggedIn &&
               <Link onClick={() => { setUser({}) }} to="/" className={classes.logout}>
@@ -122,12 +124,29 @@ function App() {
             <HomePage />
           </PrivateRoute>
           <PrivateRoute loggedUser={loggedUser} path="/bidding">
-            <Bidding updatePercents={(p) => { setCurrP(p) }} />
+            <Bidding updatePercents={
+              (p) => {
+                setCurrP(p)
+              }
+            } />
           </PrivateRoute>
           <Route path="/login">
             <Login onLogin={(user) => {
-              setTab(1)
               setUser(user)
+
+              if (!user.isSegel) {
+                setTab(1)
+                Axios.post("http://localhost:8080/count-me-in/getStudentPoints", {
+                  session_id: localStorage.getItem("sessionId")
+                }, {
+                  headers: {
+                    'Content-Type': 'text/plain;charset=UTF-8',
+                  }
+                }).then(({ data }) => {
+                  setPoints(data.SUCCESS);
+                })
+              }
+
             }} />
           </Route>
           <PrivateRoute loggedUser={loggedUser} path="/faculty">

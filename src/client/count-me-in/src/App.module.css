@@ -10,8 +10,8 @@
 }
 
 .percents {
-  margin-right: auto;
   margin-left: 2vw;
+  margin-right: 2vw;
 }
 
 .clickedLink {
@@ -51,9 +51,8 @@
   font-size: 22px;
 }
 
-.titleContainer > .points {
-  font-size: 22px;
-  margin-left: auto;
+.points {
+  margin-right: auto;
 }
 
 .titleContainer > .logout {
@@ -66,7 +65,7 @@
 }
 
 .login {
-  margin-right: auto !important;
+  margin-right: auto;
 }
 
 .Icon {

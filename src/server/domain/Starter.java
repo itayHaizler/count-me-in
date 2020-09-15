@@ -11,7 +11,6 @@ public class Starter {
     public static void main(String[] args) throws IOException, ParseException {
         Controller.initiate();
         (new SystemInitHandler()).initSystem("./configurations/script.ini");
-
         CommunicationController.start();
         SystemFacade.getInstance().calculateBiding();
     }

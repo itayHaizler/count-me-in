@@ -153,9 +153,8 @@ public class CommunicationController {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
                 JSONObject requestJson = (JSONObject) parser.parse(new String(requestByte));
-                int slotID = (requestJson.containsKey("slotOD")) ? Integer.parseInt(requestJson.get("slotID").toString()) : null;
-                Date date = (requestJson.containsKey("date")) ? (Date)requestJson.get("slotID") : null;
-                String response = facultyHandler.getRegisteredStudents(slotID, date);
+                int slotID = (requestJson.containsKey("slotID")) ? Integer.parseInt(requestJson.get("slotID").toString()) : null;
+                String response = facultyHandler.getRegisteredStudents(slotID);
                 headers.set("getRegisteredStudents", String.format("application/json; charset=%s", UTF8));
                 sendResponse(he, response);
             } catch (Exception e) {
@@ -254,7 +253,7 @@ public class CommunicationController {
                 String session_id = (requestJson.containsKey("session_id")) ?  (requestJson.get("session_id").toString()) : "";
                 studentHandler.updatePercentage(UUID.fromString(session_id), slotID, percentage);
                 headers.set("updatePercentage", String.format("application/json; charset=%s", UTF8));
-                //sendResponse(he, response);TODO: ???
+                sendResponse(he, "ok");
             }  catch (Exception e) {
                 headers.set("updatePercentage", String.format("application/json; charset=%s", UTF8));
                 sendERROR(he, e.getMessage());

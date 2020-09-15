@@ -8,7 +8,7 @@ import {
     Appointments,
     Toolbar,
 } from '@devexpress/dx-react-scheduler-material-ui';
-import { TextField, IconButton } from '@material-ui/core';
+import { TextField, IconButton, FormControl, InputLabel, FormControlLabel, Typography } from '@material-ui/core';
 import SaveIcon from '@material-ui/icons/Save';
 import Axios from 'axios';
 
@@ -20,17 +20,18 @@ import Axios from 'axios';
 
 function Bidding({ updatePercents }) {
     const [appointments, setAppointments] = useState([]);
-    const [showAlert, setAlert] = useState(false);
+    const [errAlert, setErrAlert] = useState(false);
+    const [successAlert, setSucAlert] = useState(false);
+
     const headers = {
         'Content-Type': 'text/plain;charset=UTF-8',
     }
-    const loadAppointments = useCallback(() => {
+    const loadSchedule = useCallback(() => {
         Axios.post(`http://localhost:8080/count-me-in/getScheduleBiding`, {
             session_id: localStorage.getItem("sessionId")
         }, {
             headers: headers
-        }).then(({ data }) => {
-            console.log(data);
+        }).then(({data}) => {
             const newAppointments = data.map((appointment) => {
                 const now = new Date();
                 const diffDay = appointment.day - now.getDay();
@@ -49,16 +50,17 @@ function Bidding({ updatePercents }) {
                 return newApp;
             })
 
+            const totalPercents = newAppointments.reduce((total, { bidingPercentage }) => total + parseInt(bidingPercentage), 0)
+            updatePercents(totalPercents)
             setAppointments(newAppointments);
         });
     }, []);
 
     useEffect(() => {
-        loadAppointments()
-    }, [loadAppointments])
+        loadSchedule()
+    }, [loadSchedule])
 
-    const totalPercents = appointments.reduce((total, { percents }) => total + parseInt(percents), 0)
-    updatePercents(totalPercents)
+
 
     const TimeTableCell = ({ onDoubleClick, ...restProps }) => {
         return <WeekView.TimeTableCell onDoubleClick={undefined} {...restProps} />;
@@ -78,41 +80,63 @@ function Bidding({ updatePercents }) {
                     <div>
                         {startDate.getHours() + ':' + (startDate.getMinutes() < 10 ? '0' + startDate.getMinutes() : startDate.getMinutes())
                             + ' - ' + endDate.getHours() + ':' + (endDate.getMinutes() < 10 ? '0' + endDate.getMinutes() : endDate.getMinutes())}</div>
-                    <TextField
-                        type="number"
-                        size="small"
-                        className={classes.percent}
-                        value={percents}
-                        onChange={(ev) => {
-                            setPercents(parseInt(ev.target.value))
-                        }
-                        } />
-                    <IconButton onClick={() => {
-                        let sum = 0;
-                        appointments.forEach((appointment) => {
-                            if (appointment.id != restProps.data.id)
-                                sum += appointment.bidingPercentage;
-                            else
-                                sum += percents;
-                        })
-                        if (sum > 100) {
-                            setAlert(true)
-                            setTimeout(() => {
-                                setAlert(false)
-                            }, 3000);
-                        } else {
-                            const data = appointments.map((appointment) => {
-                                if (appointment.id === restProps.data.id)
-                                    appointment.bidingPercentage = percents;
-                                return appointment;
+
+                    <div className={classes.bidPercent}>
+                        <InputLabel className={classes.percentLabel}>אחוזים - </InputLabel>
+                        <TextField
+                            type="number"
+                            size="small"
+                            className={classes.percent}
+                            value={percents}
+                            onChange={(ev) => {
+                                setPercents(parseInt(ev.target.value))
+                            }
+                            } />
+                        <IconButton onClick={() => {
+                            let sum = 0;
+                            appointments.forEach((appointment) => {
+                                if (appointment.id != restProps.data.id)
+                                    sum += appointment.bidingPercentage;
+                                else
+                                    sum += percents;
                             })
-                            setAppointments(data);
-                            updatePercents(sum)
+                            if (sum > 100) {
+                                setErrAlert(true)
+                                setTimeout(() => {
+                                    setErrAlert(false)
+                                }, 3000);
+                            } else {
+                                const data = appointments.map((appointment) => {
+                                    if (appointment.id === restProps.data.id)
+                                        appointment.bidingPercentage = percents;
+                                    return appointment;
+                                })
+
+                                Axios.post(`http://localhost:8080/count-me-in/updatePercentage`, {
+                                    slotID: restProps.data.id,
+                                    percentage: percents,
+                                    session_id: localStorage.getItem("sessionId")
+                                }, {
+                                    headers: headers
+                                }).then(({ data }) => {
+                                    console.log(data)
+                                })
+
+                                setAppointments(data);
+                                updatePercents(sum);
+
+                                setSucAlert(true);
+                                setTimeout(() => {
+                                    setSucAlert(false)
+                                }, 3000);
+
+                            }
                         }
-                    }}
-                        aria-label="save" className={classes.margin} size="small">
-                        <SaveIcon fontSize="inherit" />
-                    </IconButton>
+                        }
+                            aria-label="save" className={classes.margin} size="small">
+                            <SaveIcon fontSize="inherit" />
+                        </IconButton>
+                    </div>
                 </div>
             </Appointments.AppointmentContent >
         );
@@ -121,11 +145,19 @@ function Bidding({ updatePercents }) {
     return (
         <div >
             <Paper dir={'ltr'}>
-                {showAlert &&
+                {errAlert &&
                     <div className={classes.alert}>
                         <Alert className={classes.innerMessage} severity="warning">
                             <AlertTitle>שים לב</AlertTitle>
                     סך האחוזים חייב להיות עד 100.
+                </Alert>
+                    </div>
+                }
+                {successAlert &&
+                    <div dir={'rtl'} className={classes.alert}>
+                        <Alert className={classes.innerMessage} severity="success">
+                            <AlertTitle>שים לב</AlertTitle>
+                    האחוזים נשמרו בהצלחה
                 </Alert>
                     </div>
                 }
