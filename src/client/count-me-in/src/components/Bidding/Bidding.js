@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import classes from './Bidding.module.css';
 import Paper from '@material-ui/core/Paper';
 import { Alert, AlertTitle } from '@material-ui/lab';
@@ -10,6 +10,7 @@ import {
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { TextField, IconButton } from '@material-ui/core';
 import SaveIcon from '@material-ui/icons/Save';
+import Axios from 'axios';
 
 const schedulerData = [
     { id: 1, startDate: '2020-09-13T09:45', endDate: '2020-09-13T11:00', title: 'מבוא למדמ"ח', percents: 30 },
@@ -20,6 +21,23 @@ const schedulerData = [
 function Bidding() {
     const [appointments, setAppointments] = useState(schedulerData);
     const [showAlert, setAlert] = useState(false);
+    const headers = {
+        'Content-Type': 'text/plain;charset=UTF-8',
+    }
+    const loadAppointments = useCallback(() => {
+        Axios.post(`http://localhost:8080/count-me-in/getScheduleBiding`,{
+            session_id: localStorage.getItem("sessionId")
+        } ,{
+            headers: headers
+        }).then((response) => {
+            console.log(response.data);
+            setAppointments(response.data);
+        });
+      }, []);
+
+    useEffect(() => {
+        loadAppointments()
+    }, [loadAppointments])
 
     const TimeTableCell = ({ onDoubleClick, ...restProps }) => {
         return <WeekView.TimeTableCell onDoubleClick={undefined} {...restProps} />;
@@ -81,14 +99,14 @@ function Bidding() {
     return (
         <div >
             <Paper dir={'ltr'}>
-            {showAlert &&
-                <div className={classes.alert}>
-                    <Alert className={classes.innerMessage} severity="warning">
-                        <AlertTitle>שים לב</AlertTitle>
-                    סך האחוזים חייב להיות עד 100.
-                </Alert>
-                </div>
-            }
+                {showAlert &&
+                    <div className={classes.alert}>
+                        <Alert className={classes.innerMessage} severity="warning">
+                            <AlertTitle>שים לב</AlertTitle>
+                        סך האחוזים חייב להיות עד 100.
+                                </Alert>
+                    </div>
+                }
                 <Scheduler
                     data={appointments}
                     height={650}
@@ -105,7 +123,7 @@ function Bidding() {
                         appointmentContentComponent={BiddingSlot}
                     />
                 </Scheduler>
-            </Paper>
+            </Paper>)
         </div>
     )
 }

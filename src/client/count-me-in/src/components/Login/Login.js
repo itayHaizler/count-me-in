@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import HomePage from '../HomePage/HomePage'
 import { useHistory } from 'react-router-dom';
 import { Checkbox, FormControlLabel } from '@material-ui/core';
-
+import axios from 'axios'
 
 function Login({ onLogin }) {
     const history = useHistory();
@@ -23,8 +23,23 @@ function Login({ onLogin }) {
                 setAlert(false)
             }, 3000);
         } else {
-            onLogin({ email: email })
-            history.replace("home");
+            const headers = {
+                'Content-Type': 'text/plain;charset=UTF-8',
+            }
+
+            axios.post("http://localhost:8080/count-me-in/loginStudent", {
+                email: email,
+                password: password,
+                studentID: id,
+                session_id: localStorage.getItem("sessionId")
+            }, {
+                headers: headers
+            }).then((data) => {
+                onLogin({ email: email })
+                history.replace("home");
+
+            }).catch(() => console.log("OOPS"))
+
         }
     }
 
@@ -48,7 +63,7 @@ function Login({ onLogin }) {
                         label="התחבר כאיש סגל"
 
                     />
-                    <Button className={classes.loginBtn} variant="outlined" size="medium" color={'#000000'} onClick={validate}>
+                    <Button className={classes.loginBtn} variant="outlined" size="medium" color={'default'} onClick={validate}>
                         התחבר
                 </Button>
                 </form>

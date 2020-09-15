@@ -35,64 +35,75 @@ public class CommunicationController {
     public static void start() throws IOException {
         final HttpServer server = HttpServer.create(new InetSocketAddress(HOSTNAME, PORT), 1);
 
+//        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+//
+//        if (httpExchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+//            httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
+//            httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,Authorization");
+//            httpExchange.sendResponseHeaders(204, -1);
+//            return;
+//        }
+
         //-----------------------------------------Handle HTML\JS Requests------------------------------------------
-        server.createContext("/", he -> {
-            String pathToRoot = new File("count-me-in\\src\\client\\").getAbsolutePath().concat("\\");
-            String path = he.getRequestURI().getPath();
-            try {
-                path = path.substring(1);
-                path = path.replaceAll("//", "/");
-                if (path.length() == 0)
-                    path = "html\\Main.html";
-
-                boolean fromFile = new File(pathToRoot + path).exists();
-                InputStream in = fromFile ? new FileInputStream(pathToRoot + path)
-                        : ClassLoader.getSystemClassLoader().getResourceAsStream(pathToRoot + path);
-
-                ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                OutputStream gout = new DataOutputStream(bout);
-                byte[] tmp = new byte[4096];
-                int r;
-                while ((r = in.read(tmp)) >= 0)
-                    gout.write(tmp, 0, r);
-                gout.flush();
-                gout.close();
-                in.close();
-                byte[] data = bout.toByteArray();
-
-                if (path.endsWith(".js"))
-                    he.getResponseHeaders().set("Content-Type", "text/javascript");
-                else if (path.endsWith(".html"))
-                    he.getResponseHeaders().set("Content-Type", "text/html");
-                else if (path.endsWith(".css"))
-                    he.getResponseHeaders().set("Content-Type", "text/css");
-                else if (path.endsWith(".json"))
-                    he.getResponseHeaders().set("Content-Type", "application/json");
-                else if (path.endsWith(".svg"))
-                    he.getResponseHeaders().set("Content-Type", "image/svg+xml");
-                if (he.getRequestMethod().equals("HEAD")) {
-                    he.getResponseHeaders().set("Content-Length", "" + data.length);
-                    he.sendResponseHeaders(200, -1);
-                    return;
-                }
-
-                he.sendResponseHeaders(200, data.length);
-                he.getResponseBody().write(data);
-                he.getResponseBody().close();
-            } catch (NullPointerException t) {
-                System.err.println("Error retrieving: " + path);
-            } catch (Throwable t) {
-                System.err.println("Error retrieving: " + path);
-                t.printStackTrace();
-            }
-
-        });
+//        server.createContext("/", he -> {
+//            String pathToRoot = new File("src\\client\\").getAbsolutePath().concat("\\");
+//            String path = he.getRequestURI().getPath();
+//            try {
+//                path = path.substring(1);
+//                path = path.replaceAll("//", "/");
+//                if (path.length() == 0)
+//                    path = "count-me-in\\public\\index.html";
+//
+//                boolean fromFile = new File(pathToRoot + path).exists();
+//                InputStream in = fromFile ? new FileInputStream(pathToRoot + path)
+//                        : ClassLoader.getSystemClassLoader().getResourceAsStream(pathToRoot + path);
+//
+//                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+//                OutputStream gout = new DataOutputStream(bout);
+//                byte[] tmp = new byte[4096];
+//                int r;
+//                while ((r = in.read(tmp)) >= 0)
+//                    gout.write(tmp, 0, r);
+//                gout.flush();
+//                gout.close();
+//                in.close();
+//                byte[] data = bout.toByteArray();
+//
+//                if (path.endsWith(".js"))
+//                    he.getResponseHeaders().set("Content-Type", "text/javascript");
+//                else if (path.endsWith(".html"))
+//                    he.getResponseHeaders().set("Content-Type", "text/html");
+//                else if (path.endsWith(".css"))
+//                    he.getResponseHeaders().set("Content-Type", "text/css");
+//                else if (path.endsWith(".json"))
+//                    he.getResponseHeaders().set("Content-Type", "application/json");
+//                else if (path.endsWith(".svg"))
+//                    he.getResponseHeaders().set("Content-Type", "image/svg+xml");
+//                if (he.getRequestMethod().equals("HEAD")) {
+//                    he.getResponseHeaders().set("Content-Length", "" + data.length);
+//                    he.sendResponseHeaders(200, -1);
+//                    return;
+//                }
+//
+//                he.sendResponseHeaders(200, data.length);
+//                he.getResponseBody().write(data);
+//                he.getResponseBody().close();
+//            } catch (NullPointerException t) {
+//                System.err.println("Error retrieving: " + path);
+//            } catch (Throwable t) {
+//                System.err.println("Error retrieving: " + path);
+//                t.printStackTrace();
+//            }
+//
+//        });
 
         //-----------------------------------------Session case------------------------------------------
         //accept: null
         //retrieve: {session_id: String}
         server.createContext("/count-me-in/openSession", he -> {
             final Headers headers = he.getResponseHeaders();
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
 
             try {
                 String response = sessionHandler.openNewSession();
@@ -112,7 +123,8 @@ public class CommunicationController {
         //retrieve: {SUCCESS: "Valid Admin"} OR ERROR
         server.createContext("/count-me-in/loginFaculty", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
@@ -135,7 +147,8 @@ public class CommunicationController {
         //retrieve: [{name:int, studentID:int}, ..]
         server.createContext("/count-me-in/getRegisteredStudents", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
@@ -157,7 +170,8 @@ public class CommunicationController {
         //retrieve: [{courseID:String, groupID:int, slotID:int, day:int, hour:int, duration:int}, ..]
         server.createContext("/count-me-in/getSlots", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
@@ -181,7 +195,8 @@ public class CommunicationController {
         //retrieve: {SUCCESS: "Valid Student"}
         server.createContext("/count-me-in/loginStudent", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
@@ -205,7 +220,8 @@ public class CommunicationController {
         //retrieve: {SUCCESS:int}
         server.createContext("/count-me-in/getStudentPoints", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
@@ -227,7 +243,8 @@ public class CommunicationController {
         //retrieve: NULL
         server.createContext("/count-me-in/updatePercentage", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
@@ -250,7 +267,8 @@ public class CommunicationController {
         //retrieve: [ {slotID:String, day:int, hour:int, date:int, courseId:String, groupId:int, isApproved:boolean, bidingPercentage:int}, ..]
         server.createContext("/count-me-in/getSchedule", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
@@ -271,7 +289,8 @@ public class CommunicationController {
         //retrieve: // [{slot id:int, hour:int, day:int, courseId:String, groupId:int, duration:int}, ..]
         server.createContext("/count-me-in/getScheduleBiding", he -> {
             final Headers headers = he.getResponseHeaders();
-
+            headers.add("Access-Control-Allow-Methods","GET,POST");
+            headers.add("Access-Control-Allow-Origin","*");
             try {
                 byte[] requestByte = he.getRequestBody().readAllBytes();
                 JSONParser parser = new JSONParser();
